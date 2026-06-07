@@ -65,7 +65,7 @@
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
         /* Trik Ghost Mode IFrame (Diperbesar agar bypass block autoplay HP) */
-        #ytplayer-wrapper { position: fixed; width: 300px; height: 200px; bottom: 0px; right: 0px; opacity: 0.01; pointer-events: none; z-index: -999; overflow: hidden; }
+        #ytplayer-wrapper { position: fixed; width: 300px; height: 200px; bottom: -500px; right: -500px; opacity: 0; pointer-events: none; z-index: -999; overflow: hidden; }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center relative w-full h-full">
@@ -106,8 +106,8 @@
             </div>
             <div class="overflow-y-auto flex-1 min-h-0 text-left space-y-3 pr-1">
                 <div class="bg-gradient-to-r from-red-50 to-rose-50 p-3 rounded-xl border border-red-100">
-                    <h4 class="font-black text-red-600 text-sm mb-1">⚡ Auto-Heal & Skip Darurat</h4>
-                    <p class="text-[11px] text-slate-700 font-bold leading-tight">Lagu diblokir hak cipta (bengong)? Udah dibasmi! KATES VIP kini otomatis mencari versi lirik audio dan memutarnya tanpa macet.</p>
+                    <h4 class="font-black text-red-600 text-sm mb-1">⚡ Maestro Ad-Skipper 😂</h4>
+                    <p class="text-[11px] text-slate-700 font-bold leading-tight">Fitur dewa pemusnah iklan Youtube! Sistem bisa deteksi iklan, hitung mundur, dan kamu bisa 1-klik "Lewati Bre 😂" langsung masuk lagu!</p>
                 </div>
                 <div class="bg-gradient-to-r from-orange-50 to-amber-50 p-3 rounded-xl border border-orange-100">
                     <h4 class="font-black text-orange-600 text-sm mb-1">🚀 Smart Shuffle Categories</h4>
@@ -115,7 +115,7 @@
                 </div>
                 <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-xl border border-green-100">
                     <h4 class="font-black text-green-600 text-sm mb-1">🎧 Background Play + Search Kilat</h4>
-                    <p class="text-[11px] text-slate-700 font-bold leading-tight">Pencarian YouTube 10x lebih cepat karena Scraping Murni. Plus, lagu bakal tetep nyanyi asik walau aplikasinya kamu *minimize*!</p>
+                    <p class="text-[11px] text-slate-700 font-bold leading-tight">Pencarian YouTube 10x lebih cepat. Plus, lagu bakal tetep nyanyi asik walau aplikasinya kamu *minimize*!</p>
                 </div>
                 <div class="bg-gradient-to-r from-sky-50 to-cyan-50 p-3 rounded-xl border border-sky-100">
                     <h4 class="font-black text-sky-600 text-sm mb-1">💾 Safe Local Data</h4>
@@ -226,7 +226,7 @@
         </div>
     </div>
 
-    <!-- MODAL 6: MANAGER MUSIK (DUAL MODE DENGAN YOUTUBE PRESETS & RACING SEARCH) -->
+    <!-- MODAL 6: MANAGER MUSIK -->
     <div id="music-manager-modal" class="fixed inset-0 z-[75] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="toggleModal('music-manager-modal', false)"></div>
         <div class="relative bg-white rounded-3xl p-4 shadow-2xl max-w-sm w-[92%] border border-slate-100 flex flex-col transform scale-95 transition-transform duration-300 h-[85vh]">
@@ -252,7 +252,7 @@
             <!-- CONTAINER ONLINE (YOUTUBE BROWSER) -->
             <div id="container-online" class="hidden flex-col flex-1 min-h-0 bg-slate-50 rounded-xl p-2 border border-slate-100">
                 
-                <!-- Search Bar YouTube Yang Diinginkan (Murni Scraping) -->
+                <!-- Search Bar YouTube Yang Diinginkan (RACING SEARCH) -->
                 <div class="flex gap-1.5 mb-2 shrink-0">
                     <input type="text" id="yt-search-input" placeholder="Cari lagu apa bre? (Ketik judul)..." class="flex-1 p-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-red-400 shadow-sm" onkeydown="if(event.key==='Enter') executeYTSearch()">
                     <button onclick="executeYTSearch()" class="bg-red-500 text-white w-10 rounded-xl font-black text-xs hover:bg-red-600 active:scale-95 flex items-center justify-center shadow-sm">
@@ -262,7 +262,7 @@
 
                 <!-- Quick Categories Grid (4 Shapes Sejajar) -->
                 <div class="grid grid-cols-4 gap-1.5 mb-2 shrink-0">
-                    <button onclick="loadPresetYT('Koleksi')" id="btn-cat-Koleksi" class="cat-btn px-0.5 py-1.5 bg-emerald-500 text-white text-[9px] font-black rounded-lg border border-emerald-500 shadow-sm transition-colors text-center truncate flex items-center justify-center gap-0.5"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg> Tersimpan</button>
+                    <button onclick="loadPresetYT('Koleksi')" id="btn-cat-Koleksi" class="cat-btn px-0.5 py-1.5 bg-emerald-500 text-white text-[9px] font-black rounded-lg border border-emerald-500 shadow-sm transition-colors text-center truncate flex items-center justify-center gap-0.5"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg> Koleksi</button>
                     <button onclick="loadPresetYT('Jawa')" id="btn-cat-Jawa" class="cat-btn px-0.5 py-1.5 bg-white text-slate-700 text-[9px] font-black rounded-lg border border-slate-200 shadow-sm transition-colors text-center truncate">🎵 Jawa</button>
                     <button onclick="loadPresetYT('Luar')" id="btn-cat-Luar" class="cat-btn px-0.5 py-1.5 bg-white text-slate-700 text-[9px] font-black rounded-lg border border-slate-200 shadow-sm transition-colors text-center truncate">🌍 Luar</button>
                     <button onclick="loadPresetYT('Murotal')" id="btn-cat-Murotal" class="cat-btn px-0.5 py-1.5 bg-white text-slate-700 text-[9px] font-black rounded-lg border border-slate-200 shadow-sm transition-colors text-center truncate">🕌 Murotal</button>
@@ -299,7 +299,7 @@
             <div class="mx-auto flex flex-col items-center mb-1 relative z-30 pointer-events-auto w-full px-2">
                 <div id="equalizer" class="flex items-end justify-center gap-[2px] h-[14px] mb-1 opacity-0 transition-opacity duration-300 w-[80%] max-w-[200px]"></div>
                 <!-- PLAYER UI -->
-                <div id="player-ui" class="bg-indigo-900 border border-slate-700 shadow-[0_4px_15px_rgba(0,0,0,0.3)] rounded-full px-3 py-1 flex items-center justify-between gap-2 w-[85%] sm:w-[90%] max-w-full overflow-hidden shrink cursor-pointer transition-colors duration-300" onclick="bukaManagerMusik()">
+                <div id="player-ui" class="bg-indigo-900 border border-slate-700 shadow-[0_4px_15px_rgba(0,0,0,0.3)] rounded-full px-3 py-1 flex items-center justify-between gap-2 w-[85%] sm:w-[90%] max-w-full overflow-hidden shrink cursor-pointer transition-colors duration-300" onclick="handlePlayerClick(event)">
                     <span id="player-icon" class="text-blue-400 text-[11px] shrink-0 animate-pulse">🎵</span>
                     <div class="marquee-wrapper border-r border-slate-600 pr-1 mr-1 flex-1 shrink"><span id="music-title" class="marquee-text text-[9px] text-white font-black uppercase tracking-widest" style="animation-play-state: paused;">PILIH MUSIK...</span></div>
                     <div class="flex items-center gap-2 shrink-0">
@@ -431,7 +431,6 @@
 
         function refreshApp() { window.location.href = window.location.pathname + '?v=' + new Date().getTime(); }
         
-        // Murni bersihkan layar kalkulator (TIDAK menghapus data siswa atau list musik)
         function bersihkanLayar() {
             activeKelas = null; activeSiswaId = ""; document.getElementById('area-kelas').classList.remove('needs-class');
             nilaiInput = { r1: '', r2: '', r3: '', total: '' };
@@ -611,6 +610,9 @@
         let isYtReady = false;
         let currentYtIndex = 0;
         let errorSkipCount = 0; 
+        let isAdMode = false;
+        let adCountdown = 5;
+        let adInterval = null;
         
         let youtubeLibrary = [
             { title: 'Cafe Vibes Indonesia', id: 'GIxLDvYTGaU', channel: 'Cafe Music', type: 'video' },
@@ -688,11 +690,99 @@
                 height: '100%', width: '100%', videoId: '', 
                 playerVars: { 'playsinline': 1, 'autoplay': 0 },
                 events: { 
-                    'onReady': () => { isYtReady = true; }, 
+                    'onReady': () => { isYtReady = true; adInterval = setInterval(checkAdStatus, 1000); }, 
                     'onStateChange': onPlayerStateChange,
                     'onError': onPlayerError 
                 }
             });
+        }
+
+        // SISTEM AD-DETECTOR & AD-SKIPPER DEWA
+        function checkAdStatus() {
+            if (musicMode !== 'online' || !isYtReady || !ytPlayer || !ytPlayer.getPlayerState) return;
+            let state = ytPlayer.getPlayerState();
+            if (state !== YT.PlayerState.PLAYING && state !== YT.PlayerState.BUFFERING) return;
+
+            try {
+                let duration = ytPlayer.getDuration();
+                let videoData = ytPlayer.getVideoData();
+                let title = videoData ? videoData.title : "";
+                let trackTitle = youtubeLibrary[currentYtIndex] ? youtubeLibrary[currentYtIndex].title : "";
+                
+                // Deteksi iklan: Info YT AdPlaying ATAU durasi video mengecil menjadi kurang dari 65 detik dan title tidak cocok
+                let isAd = (ytPlayer.playerInfo && ytPlayer.playerInfo.adPlaying) || 
+                           (duration > 0 && duration < 65 && title && !title.includes(trackTitle) && !trackTitle.includes(title));
+
+                if (isAd && !isAdMode) {
+                    isAdMode = true;
+                    adCountdown = 5;
+                    document.getElementById('player-ui').classList.remove('bg-red-950', 'bg-indigo-900');
+                    document.getElementById('player-ui').classList.add('bg-orange-600');
+                }
+
+                if (isAdMode) {
+                    const titleEl = document.getElementById('music-title');
+                    if (adCountdown > 0) {
+                        titleEl.innerText = `Iklan bentar bre... [${adCountdown}]`;
+                        titleEl.style.animationPlayState = 'paused'; 
+                        adCountdown--;
+                    } else {
+                        titleEl.innerText = "Lewati Bre 😂";
+                        if(!titleEl.classList.contains('text-yellow-300')) {
+                            titleEl.classList.add('text-yellow-300', 'animate-pulse');
+                        }
+                    }
+                }
+                
+                // Auto reset jika iklan sudah lewat sendirinya
+                if (!isAd && isAdMode) {
+                     resetAdUI(title || trackTitle);
+                }
+            } catch (err) {}
+        }
+
+        function resetAdUI(trackTitle) {
+            isAdMode = false;
+            const titleEl = document.getElementById('music-title');
+            titleEl.innerText = trackTitle;
+            titleEl.classList.remove('text-yellow-300', 'animate-pulse');
+            titleEl.style.animationPlayState = 'running';
+            document.getElementById('player-ui').classList.remove('bg-orange-600');
+            document.getElementById('player-ui').classList.add(musicMode === 'online' ? 'bg-red-950' : 'bg-indigo-900');
+        }
+
+        // Penanganan Klik Pada Player UI
+        function handlePlayerClick(e) {
+            if (isAdMode) {
+                if (adCountdown === 0) {
+                    e.stopPropagation();
+                    forceSkipAd();
+                } else {
+                    // Biarkan waktu iklan berjalan
+                    e.stopPropagation();
+                }
+            } else {
+                bukaManagerMusik();
+            }
+        }
+
+        function forceSkipAd() {
+            isAdMode = false;
+            let track = youtubeLibrary[currentYtIndex];
+            if(!track) return;
+            let titleEl = document.getElementById('music-title');
+            titleEl.innerText = "MENGHAPUS IKLAN... 🚀";
+            titleEl.classList.remove('text-yellow-300', 'animate-pulse');
+            document.getElementById('player-ui').classList.remove('bg-orange-600');
+            document.getElementById('player-ui').classList.add('bg-red-950');
+            
+            // Trik bypass iklan pre-roll yang agresif
+            ytPlayer.loadVideoById({videoId: track.id, startSeconds: 1.5});
+            if (!isPlaying) {
+                ytPlayer.playVideo();
+                isPlaying = true;
+                updateUIPlayer();
+            }
         }
 
         // SISTEM AUTO-HEAL: Cari video lirik secara instan kalau video aslinya diblokir (Pakai Scraping AllOrigins)
@@ -733,7 +823,7 @@
                             youtubeLibrary[index].title = youtubeLibrary[index].title + " (Bypass)";
                             saveYTLocal();
                             if(index === currentYtIndex) {
-                                ytPlayer.loadVideoById(newId);
+                                ytPlayer.loadVideoById({videoId: newId, startSeconds: 0.5});
                                 if(isPlaying) ytPlayer.playVideo();
                             }
                             return;
@@ -778,7 +868,7 @@
                          youtubeLibrary[currentYtIndex].title = videoData.title; 
                          saveYTLocal();
                     }
-                    document.getElementById('music-title').innerText = videoData.title;
+                    if (!isAdMode) document.getElementById('music-title').innerText = videoData.title;
                     updateMediaSession(videoData.title, youtubeLibrary[currentYtIndex].channel || 'YouTube Media', `https://img.youtube.com/vi/${videoData.video_id || youtubeLibrary[currentYtIndex].id}/0.jpg`);
                 }
                 updateUIPlayer();
@@ -988,7 +1078,7 @@
             row.setAttribute('onclick', `tambahDanPutarYT('${id}', '${safeTitle}', '${safeChannel}')`);
             row.innerHTML = `
                 <div class="w-20 h-[50px] shrink-0 relative rounded-lg overflow-hidden bg-slate-200 shadow-sm border border-slate-100">
-                    <img src="${thumbUrl}" onerror="this.src='LOGO.png'" class="w-full h-full object-cover">
+                    <img src="${thumbUrl}" onerror="this.src='https://img.youtube.com/vi/${id}/0.jpg'" class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors"></div>
                 </div>
                 <div class="flex flex-col justify-center min-w-0 pr-1 py-0.5">
@@ -1121,7 +1211,8 @@
             if(track.type === 'playlist') {
                 ytPlayer.loadPlaylist({list: track.id});
             } else {
-                ytPlayer.loadVideoById(track.id);
+                // Trik Bypass Preroll: Muat lagu dari detik 0.5 secara murni
+                ytPlayer.loadVideoById({videoId: track.id, startSeconds: 0.5});
             }
             
             const titleEl = document.getElementById('music-title'); titleEl.innerText = track.title;
@@ -1134,11 +1225,11 @@
             if (isPlaying) {
                 document.getElementById('icon-play').classList.add('hidden'); document.getElementById('icon-pause').classList.remove('hidden'); 
                 document.getElementById('equalizer').classList.remove('opacity-0'); document.getElementById('equalizer').classList.add('opacity-100'); 
-                if(titleEl.classList.contains('marquee-text')) titleEl.style.animationPlayState = 'running';
+                if(!isAdMode && titleEl.classList.contains('marquee-text')) titleEl.style.animationPlayState = 'running';
             } else {
                 document.getElementById('icon-play').classList.remove('hidden'); document.getElementById('icon-pause').classList.add('hidden'); 
                 document.getElementById('equalizer').classList.remove('opacity-100'); document.getElementById('equalizer').classList.add('opacity-0'); 
-                if(titleEl.classList.contains('marquee-text')) titleEl.style.animationPlayState = 'paused';
+                if(!isAdMode && titleEl.classList.contains('marquee-text')) titleEl.style.animationPlayState = 'paused';
             }
             if (!document.getElementById('music-manager-modal').classList.contains('pointer-events-none')) bukaManagerMusik();
         }
