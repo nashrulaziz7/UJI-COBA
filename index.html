@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>KATES VIP - Kalkulator & Rekap Siswa</title>
+    
+    <link class="favicon" rel="icon" href="LOGO.png" type="image/png">
+    <link rel="apple-touch-icon" href="LOGO.png">
+    <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22KATES%20VIP%20-%20Kalkulator%20Tes%20Siswa%22%2C%22short_name%22%3A%22KATES%20VIP%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23ffffff%22%2C%22theme_color%22%3A%22%233b82f6%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22LOGO.png%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%2C%22purpose%22%3A%22any%20maskable%22%7D%2C%7B%22src%22%3A%22LOGO.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800;900&display=swap');
+        
+        html, body { width: 100%; height: 100%; position: fixed; top: 0; left: 0; overflow: hidden; overscroll-behavior: none; }
+        body { font-family: 'Nunito', sans-serif; margin: 0; background: linear-gradient(135deg, #f0f4f8, #e2e8f0); touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+
+        @keyframes fade-in-down { 0% { opacity: 0; transform: translateY(-20px) scale(0.95); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes pop-in { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes fade-in-up { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes slide-up-numpad { 0% { transform: translateY(100%); } 100% { transform: translateY(0); } }
+        @keyframes wiggle { 0%, 100% { transform: scale(1) rotate(0deg); } 25% { transform: scale(1.05) rotate(-5deg); } 50% { transform: scale(1.05) rotate(5deg); } 75% { transform: scale(1.05) rotate(-5deg); } }
+
+        .anim-header  { animation: fade-in-down 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both; }
+        .anim-scores  { animation: pop-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s both; }
+        .anim-classes { animation: fade-in-up 0.5s ease-out 0.4s both; }
+        .anim-toggle  { animation: fade-in-up 0.5s ease-out 0.5s both; }
+        .anim-input   { animation: fade-in-up 0.5s ease-out 0.6s both; }
+        .anim-numpad  { animation: slide-up-numpad 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) 0.7s both; }
+        .anim-wiggle  { animation: wiggle 0.6s ease-in-out; }
+
+        .eq-bar { width: 3px; background: linear-gradient(to top, #3b82f6, #ec4899); border-radius: 2px; animation: eq-bounce 0.5s ease-in-out infinite alternate; }
+        @keyframes eq-bounce { 0% { transform: scaleY(0.3); } 100% { transform: scaleY(1); } }
+        
+        .marquee-wrapper { overflow: hidden; white-space: nowrap; display: flex; align-items: center; mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent); -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent); }
+        .marquee-text { display: inline-block; padding-left: 100%; animation: marquee 8s linear infinite; }
+        @keyframes marquee { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
+
+        .subject-bg { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; overflow: hidden; }
+        .symbol { position: absolute; font-weight: 900; white-space: nowrap; will-change: transform, opacity; animation: float-up linear infinite; text-shadow: 0 2px 5px rgba(255,255,255,0.8); }
+        @keyframes float-up { 0% { transform: translateY(110vh) rotate(-15deg) scale(0.8); opacity: 0; } 15% { opacity: 0.35; } 50% { transform: translateY(40vh) rotate(10deg) scale(1.05); opacity: 0.35; } 85% { opacity: 0.35; } 100% { transform: translateY(-15vh) rotate(-10deg) scale(1.15); opacity: 0; } }
+
+        .class-btn { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); background-color: #ffffff; color: #64748b; border: 1px solid #cbd5e1; position: relative; overflow: hidden; }
+        .class-active { transform: scale(1.03) translateY(-2px); box-shadow: 0 8px 20px -6px var(--glow-color); color: #ffffff !important; border-color: transparent !important; animation: breathe 2s ease-in-out infinite; z-index: 10; }
+        @keyframes breathe { 0%, 100% { transform: scale(1.03) translateY(-2px); box-shadow: 0 8px 20px -6px var(--glow-color); } 50% { transform: scale(1.01) translateY(0px); box-shadow: 0 4px 10px -4px var(--glow-color); } }
+
+        .needs-class .class-btn { animation: pulse-warning 0.5s ease-in-out; }
+        @keyframes pulse-warning { 0%, 100% { transform: scale(1); border-color: #cbd5e1; } 50% { transform: scale(1.02); border-color: #f43f5e; background-color: #fff1f2; } }
+
+        .pop-effect { animation: pop-score 0.3s ease-out; }
+        @keyframes pop-score { 0% { transform: scale(1); } 50% { transform: scale(1.15); color: #3b82f6; } 100% { transform: scale(1); } }
+
+        .numpad-btn { height: 100%; display: flex; align-items: center; justify-content: center; font-weight: 800; border-radius: 0.75rem; border: 1px solid #e2e8f0; background: white; transition: all 0.1s; }
+        .numpad-btn:active { transform: scale(0.92); background-color: #cbd5e1; }
+
+        .input-active { border: 2px solid #3b82f6 !important; background-color: #eff6ff !important; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); }
+        
+        select.custom-select { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1em; padding-right: 1.5rem; }
+        
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Trik Ghost Mode IFrame (Diperbesar agar bypass block autoplay HP) */
+        #ytplayer-wrapper { position: fixed; width: 300px; height: 200px; bottom: -500px; right: -500px; opacity: 0; pointer-events: none; z-index: -999; overflow: hidden; }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center relative w-full h-full">
+
+    <!-- Area YouTube Tembus Pandang -->
+    <div id="ytplayer-wrapper"><div id="ytplayer"></div></div>
+
+    <div class="fixed top-2 left-0 w-full px-2 sm:px-4 z-40 flex justify-between items-start pointer-events-none anim-header">
+        <button onclick="refreshApp()" class="pointer-events-auto bg-blue-100/90 backdrop-blur-sm border border-blue-200 text-blue-600 text-[9px] font-black px-2.5 py-1.5 rounded-lg shadow-sm hover:bg-blue-200 active:scale-95 transition-all flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg> REFRESH
+        </button>
+        <div class="pointer-events-auto bg-white/60 backdrop-blur-md px-3 py-1 rounded-full shadow-sm border border-slate-100 mt-0.5">
+            <p class="text-[9px] uppercase tracking-[0.2em] text-blue-600 font-bold opacity-90 m-0">By Zivi•Ai</p>
+        </div>
+        <button onclick="bersihkanLayar()" class="pointer-events-auto bg-rose-100/90 backdrop-blur-sm border border-rose-200 text-rose-600 text-[9px] font-black px-2.5 py-1.5 rounded-lg shadow-sm hover:bg-rose-200 active:scale-95 transition-all flex items-center gap-1" title="Bersihkan Angka Layar">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg> RESET
+        </button>
+    </div>
+
+    <!-- POPUP 1: INSTALL / WAJIB UPDATE -->
+    <div id="install-update-modal" class="fixed inset-0 z-[100] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+        <div class="relative bg-white rounded-[2rem] p-6 shadow-2xl transform scale-95 transition-transform duration-300 max-w-[300px] w-[90%] text-center border-4 border-indigo-200 flex flex-col items-center">
+            <div id="iu-emoji" class="text-6xl mb-3 animate-bounce">📲</div>
+            <h3 id="iu-title" class="text-indigo-600 font-black text-2xl mb-2">Install Dulu Bosku!</h3>
+            <p id="iu-message" class="text-slate-600 text-sm font-bold leading-relaxed mb-5">Pesan di sini</p>
+            <button id="btn-install-update" class="w-full py-3 bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-black rounded-xl shadow-lg hover:from-indigo-600 hover:to-blue-600 active:scale-95 transition-all tracking-widest uppercase">SIAP BRO!</button>
+        </div>
+    </div>
+
+    <!-- POPUP 2: LIST PEMBARUAN CHANGELOG -->
+    <div id="changelog-modal" class="fixed inset-0 z-[105] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="tutupChangelog()"></div>
+        <div class="relative bg-white rounded-3xl p-5 shadow-2xl max-w-sm w-[92%] border border-slate-100 flex flex-col transform scale-95 transition-transform duration-300 max-h-[85vh]">
+            <div class="flex justify-between items-center mb-3 border-b pb-2 border-slate-100 shrink-0">
+                <h3 class="font-black text-slate-800 text-lg flex items-center gap-2"><span class="text-xl">✨</span> KATES VIP v.26.6.6</h3>
+                <button onclick="tutupChangelog()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
+            </div>
+            <div class="overflow-y-auto flex-1 min-h-0 text-left space-y-3 pr-1">
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-xl border border-green-100">
+                    <h4 class="font-black text-green-600 text-sm mb-1">🎧 Background Audio & Search Kilat</h4>
+                    <p class="text-[11px] text-slate-700 font-bold leading-tight">Sekarang musik tetap jalan walau aplikasi diminimize (Lock Screen Info). Plus pencarian YouTube 10x lebih cepat dengan fitur Server Racing!</p>
+                </div>
+                <div class="bg-gradient-to-r from-orange-50 to-amber-50 p-3 rounded-xl border border-orange-100">
+                    <h4 class="font-black text-orange-600 text-sm mb-1">🚀 Preset Koleksi Dewa</h4>
+                    <p class="text-[11px] text-slate-700 font-bold leading-tight">Tombol Jawa, Indo, Luar, & Murottal langsung nembak Playlist Official favoritmu no delay! (Tanpa loading pencarian).</p>
+                </div>
+                <div class="bg-gradient-to-r from-sky-50 to-cyan-50 p-3 rounded-xl border border-sky-100">
+                    <h4 class="font-black text-sky-600 text-sm mb-1">💾 Safe Local Data</h4>
+                    <p class="text-[11px] text-slate-700 font-bold leading-tight">Meskipun direfresh, Playlist musik YouTube incaranmu sekarang awet tersimpan di HP. Tombol RESET layar juga 100% gak bakal ngapus playlistmu.</p>
+                </div>
+                <div class="bg-gradient-to-r from-indigo-50 to-blue-50 p-3 rounded-xl border border-indigo-100">
+                    <h4 class="font-black text-indigo-600 text-sm mb-1">💎 Mode Kalkulasi 7 Kelas</h4>
+                    <p class="text-[11px] text-slate-700 font-bold leading-tight">Kelas disesuaikan sampe 7 Kategori! Pembagi otomatis akurat: /55, /60, /65, /70, /45 tanpa meleset sedetikpun.</p>
+                </div>
+                <div class="bg-gradient-to-r from-pink-50 to-rose-50 p-3 rounded-xl border border-pink-100">
+                    <h4 class="font-black text-pink-600 text-sm mb-1">🎶 Hot MP3 Lokal Update</h4>
+                    <p class="text-[11px] text-slate-700 font-bold leading-tight">Added "Mas Bahlil Ganteng" & "Bos Gizi Nyolong" sebagai Default MP3 Lokal VIP!</p>
+                </div>
+            </div>
+            <button onclick="tutupChangelog()" class="w-full mt-4 shrink-0 py-3 bg-slate-800 hover:bg-slate-900 text-white font-black rounded-xl shadow-lg text-[11px] active:scale-95 transition-all tracking-widest uppercase">
+                MANTAP, GASKEUN!
+            </button>
+        </div>
+    </div>
+
+    <!-- POPUP PERINGATAN LUCU -->
+    <div id="cute-popup" class="fixed inset-0 z-[110] flex items-center justify-center pointer-events-none opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="tutupPeringatanLucu()"></div>
+        <div id="cute-popup-box" class="relative bg-white rounded-[2rem] p-6 shadow-2xl transform scale-50 opacity-0 transition-all duration-300 max-w-[280px] w-4/5 text-center border-4 border-rose-200 flex flex-col items-center">
+            <div id="popup-emoji" class="text-6xl mb-3 animate-bounce">🙈</div>
+            <h3 id="popup-title" class="text-rose-500 font-black text-2xl mb-1">Oopsie!</h3>
+            <p id="popup-message" class="text-slate-600 text-sm font-bold leading-relaxed mb-1">Pesan peringatan di sini</p>
+            <div id="popup-max-box" class="bg-rose-50 rounded-xl py-2 px-4 mt-3 border border-rose-100 w-full hidden">
+                <span class="text-[10px] text-rose-400 uppercase tracking-widest block font-bold">Mentok di angka:</span>
+                <span id="popup-max-val" class="text-3xl font-black text-rose-500">0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 1: REKAPITULASI & MANAJEMEN SISWA -->
+    <div id="rekap-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="toggleModal('rekap-modal', false)"></div>
+        <div class="relative bg-white rounded-3xl p-5 shadow-2xl max-w-sm w-11/12 h-[80vh] flex flex-col border border-slate-100 transform scale-95 transition-transform duration-300">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-black text-slate-800 flex items-center gap-2"><span>📊 Rekap Nilai</span><span id="rekap-class-tag" class="text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-bold">Semua</span></h2>
+                <button onclick="toggleModal('rekap-modal', false)" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
+            </div>
+            <div class="flex gap-2 mb-4">
+                <button onclick="bukaExportDialog()" class="flex-1 bg-emerald-500 text-white font-black py-2.5 rounded-xl shadow-lg shadow-emerald-100 hover:bg-emerald-600 transition-colors text-xs flex items-center justify-center gap-1">🟢 EXPORT EXCEL</button>
+            </div>
+            <div class="flex-1 overflow-y-auto pr-1 border border-slate-100 rounded-2xl bg-slate-50 p-2"><div id="tabel-rekap-body" class="space-y-2"></div></div>
+            <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between text-xs text-slate-400 font-bold">
+                <span id="rekap-total-siswa">Total: 0 Siswa</span>
+                <button onclick="clearSemuaNilai()" class="text-red-500 hover:underline">Hapus Semua Nilai</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: MANAJEMEN SISWA -->
+    <div id="tambah-siswa-modal" class="fixed inset-0 z-[60] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="toggleModal('tambah-siswa-modal', false)"></div>
+        <div class="relative bg-white rounded-3xl p-5 shadow-2xl max-w-xs w-5/6 border border-slate-100 flex flex-col">
+            <h3 class="font-black text-slate-800 text-lg mb-2 text-center">Data Siswa</h3>
+            <div class="flex bg-slate-100 rounded-lg p-1 mb-4">
+                <button id="tab-manage-tambah" onclick="setModeManage('tambah')" class="flex-1 py-1.5 text-[9px] sm:text-[10px] font-black rounded-md bg-white shadow-sm text-blue-600 transition-all">TAMBAH BARU</button>
+                <button id="tab-manage-edit" onclick="setModeManage('edit')" class="flex-1 py-1.5 text-[9px] sm:text-[10px] font-black rounded-md text-slate-500 hover:text-slate-700 transition-all">EDIT / HAPUS</button>
+            </div>
+            <div class="space-y-3 mb-5 text-left">
+                <div><label class="text-[9px] font-bold text-slate-400 block mb-1">KELAS TARGET</label><select id="manage-kelas" onchange="onChangeManageKelas()" class="custom-select w-full p-2 border-2 border-slate-200 rounded-lg font-bold text-xs outline-none focus:border-blue-500 bg-white"></select></div>
+                <div id="box-manage-select" class="hidden"><label class="text-[9px] font-bold text-slate-400 block mb-1">PILIH SISWA</label><select id="manage-siswa-select" onchange="onChangeManageSiswa()" class="custom-select w-full p-2 border-2 border-slate-200 rounded-lg font-bold text-xs outline-none focus:border-blue-500 bg-white"></select></div>
+                <div class="flex gap-2 w-full">
+                    <div class="w-1/3"><label class="text-[9px] font-bold text-slate-400 block mb-1">NO. URUT</label><input type="number" id="manage-presensi" class="w-full p-2 border-2 border-slate-200 rounded-lg font-bold text-xs outline-none focus:border-blue-500 text-center" placeholder="No"></div>
+                    <div class="w-2/3"><label class="text-[9px] font-bold text-slate-400 block mb-1">NAMA LENGKAP</label><input type="text" id="manage-nama" class="w-full p-2 border-2 border-slate-200 rounded-lg font-bold text-xs outline-none focus:border-blue-500" placeholder="Nama siswa..."></div>
+                </div>
+            </div>
+            <div id="btn-group-tambah" class="flex gap-2">
+                <button onclick="toggleModal('tambah-siswa-modal', false)" class="flex-1 py-2 bg-slate-100 text-slate-600 font-extrabold rounded-xl text-xs hover:bg-slate-200">Batal</button>
+                <button onclick="simpanSiswaBaru()" class="flex-1 py-2 bg-blue-600 text-white font-extrabold rounded-xl text-xs hover:bg-blue-700">Tambahkan</button>
+            </div>
+            <div id="btn-group-edit" class="flex gap-2 hidden">
+                <button onclick="hapusSiswaManage()" class="flex-1 py-2 bg-rose-100 text-rose-600 font-extrabold rounded-xl text-xs hover:bg-rose-200">🗑️ Hapus</button>
+                <button onclick="simpanEditSiswa()" class="flex-1 py-2 bg-emerald-500 text-white font-extrabold rounded-xl text-xs hover:bg-emerald-600">💾 Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: EDIT PENGATURAN KELAS -->
+    <div id="edit-kelas-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="toggleModal('edit-kelas-modal', false)"></div>
+        <div class="relative bg-white rounded-3xl p-5 shadow-2xl max-w-xs w-5/6 border border-slate-100 flex flex-col">
+            <h3 class="font-black text-slate-800 text-lg mb-1 text-center" id="edit-kelas-title">Edit Aturan Kelas</h3>
+            <p class="text-xs text-slate-400 text-center mb-4">Ubah nama dan bobot kelas sesukamu</p>
+            <div class="space-y-3 mb-5">
+                <div><label class="text-[10px] font-bold text-slate-400 block mb-1">NAMA LABEL TOMBOL</label><input type="text" id="edit-label-nama" class="w-full p-2.5 border border-slate-200 rounded-lg font-bold text-sm"></div>
+                <div><label class="text-[10px] font-bold text-slate-400 block mb-1">ANGKA PEMBAGI (MAKS SKOR)</label><input type="number" id="edit-pembagi-val" class="w-full p-2.5 border border-slate-200 rounded-lg font-bold text-sm"></div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="toggleModal('edit-kelas-modal', false)" class="flex-1 py-2 bg-slate-100 text-slate-600 font-extrabold rounded-xl text-xs">Batal</button>
+                <button onclick="simpanEditAturan()" class="flex-1 py-2 bg-blue-600 text-white font-extrabold rounded-xl text-xs">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: EXPORT EXCEL -->
+    <div id="export-excel-modal" class="fixed inset-0 z-[70] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="toggleModal('export-excel-modal', false)"></div>
+        <div class="relative bg-white rounded-3xl p-5 shadow-2xl max-w-xs w-5/6 border border-slate-100 flex flex-col text-center">
+            <h3 class="font-black text-slate-800 text-lg mb-1">Atur Laporan Excel</h3>
+            <p class="text-xs text-slate-400 mb-4">Masukkan nama mata pelajaran duls</p>
+            <div class="space-y-3 mb-5 text-left">
+                <div><label class="text-[10px] font-bold text-slate-400 block mb-1">NAMA MATA PELAJARAN (MAPEL)</label><input type="text" id="export-mapel-name" value="" placeholder="Contoh: Matematika" class="w-full p-2.5 border border-slate-200 rounded-lg font-bold text-xs outline-none focus:border-blue-500"></div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="toggleModal('export-excel-modal', false)" class="flex-1 py-2 bg-slate-100 text-slate-600 font-extrabold rounded-xl text-xs">Batal</button>
+                <button onclick="prosesUnduhExcel()" class="flex-1 py-2 bg-emerald-500 text-white font-extrabold rounded-xl text-xs">Download</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 6: MANAGER MUSIK (DUAL MODE DENGAN YOUTUBE PRESETS & RACING SEARCH) -->
+    <div id="music-manager-modal" class="fixed inset-0 z-[75] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="toggleModal('music-manager-modal', false)"></div>
+        <div class="relative bg-white rounded-3xl p-4 shadow-2xl max-w-sm w-[92%] border border-slate-100 flex flex-col transform scale-95 transition-transform duration-300 h-[85vh]">
+            <div class="flex justify-between items-center mb-2 shrink-0">
+                <h3 class="font-black text-slate-800 text-lg flex items-center gap-2"><span class="text-xl">🎵</span> Music Player</h3>
+                <button onclick="toggleModal('music-manager-modal', false)" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
+            </div>
+            
+            <!-- TABS MODE MUSIK -->
+            <div class="flex bg-slate-100 rounded-lg p-1 mb-2 shrink-0">
+                <button id="tab-music-offline" onclick="setMusicMode('offline')" class="flex-1 py-1.5 text-[10px] font-black rounded-md bg-white shadow-sm text-blue-600 transition-all flex items-center justify-center gap-1"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"></path></svg> MP3 LOKAL</button>
+                <button id="tab-music-online" onclick="setMusicMode('online')" class="flex-1 py-1.5 text-[10px] font-black rounded-md text-slate-500 hover:text-slate-700 transition-all flex items-center justify-center gap-1"><svg class="w-3.5 h-3.5 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg> YOUTUBE</button>
+            </div>
+
+            <!-- CONTAINER OFFLINE -->
+            <div id="container-offline" class="flex flex-col flex-1 min-h-0">
+                <div id="playlist-container-offline" class="overflow-y-auto mb-3 border border-slate-100 rounded-xl bg-slate-50 flex-1 text-left p-1 space-y-1"></div>
+                <button onclick="triggerUploadMusik()" class="w-full shrink-0 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white font-black rounded-xl shadow-lg shadow-blue-100 text-[10px] active:scale-95 transition-all flex items-center justify-center gap-1.5 tracking-widest uppercase mt-auto">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg> Tambah MP3 Lokal
+                </button>
+            </div>
+
+            <!-- CONTAINER ONLINE (YOUTUBE BROWSER) -->
+            <div id="container-online" class="hidden flex-col flex-1 min-h-0 bg-slate-50 rounded-xl p-2 border border-slate-100">
+                
+                <!-- Search Bar YouTube Yang Diinginkan (RACING SEARCH) -->
+                <div class="flex gap-1.5 mb-2 shrink-0">
+                    <input type="text" id="yt-search-input" placeholder="Cari lagu apa bre? (Ketik judul)..." class="flex-1 p-2 bg-white border border-slate-200 rounded-xl text-xs font-bold outline-none focus:border-red-400 shadow-sm" onkeydown="if(event.key==='Enter') executeYTSearch()">
+                    <button onclick="executeYTSearch()" class="bg-red-500 text-white w-10 rounded-xl font-black text-xs hover:bg-red-600 active:scale-95 flex items-center justify-center shadow-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </button>
+                </div>
+
+                <!-- Quick Categories Grid -->
+                <div class="grid grid-cols-4 gap-1.5 mb-2 shrink-0">
+                    <button onclick="loadPresetYT('Jawa')" class="px-1 py-2 bg-white text-slate-700 text-[10px] font-black rounded-lg border border-slate-200 hover:border-red-300 hover:text-red-500 shadow-sm transition-colors text-center truncate">🎵 Jawa</button>
+                    <button onclick="loadPresetYT('Indo')" class="px-1 py-2 bg-white text-slate-700 text-[10px] font-black rounded-lg border border-slate-200 hover:border-red-300 hover:text-red-500 shadow-sm transition-colors text-center truncate">🎤 Indo</button>
+                    <button onclick="loadPresetYT('Luar')" class="px-1 py-2 bg-white text-slate-700 text-[10px] font-black rounded-lg border border-slate-200 hover:border-red-300 hover:text-red-500 shadow-sm transition-colors text-center truncate">🌍 Luar</button>
+                    <button onclick="loadPresetYT('Murotal')" class="px-1 py-2 bg-white text-slate-700 text-[10px] font-black rounded-lg border border-slate-200 hover:border-red-300 hover:text-red-500 shadow-sm transition-colors text-center truncate">🕌 Murotal</button>
+                </div>
+
+                <!-- Toggle View: Playlist vs Search Results -->
+                <div class="flex justify-between items-center mb-1 shrink-0 px-1">
+                    <span id="yt-view-title" class="text-[10px] font-black text-slate-500 uppercase tracking-widest">PLAYLIST TERSIMPAN</span>
+                    <button id="btn-back-playlist" onclick="showYtPlaylistView()" class="hidden text-[9px] font-bold text-red-500 hover:underline">Tutup Pencarian</button>
+                </div>
+
+                <!-- Dynamic Content Area (Scrollable) -->
+                <div id="yt-dynamic-content" class="overflow-y-auto flex-1 min-h-0 bg-white border border-slate-200 rounded-xl p-1.5 space-y-1 relative">
+                    <!-- Playlist View (Default) -->
+                    <div id="playlist-container-online" class="space-y-1"></div>
+                    <!-- Search Results View (Hidden) -->
+                    <div id="yt-search-results" class="hidden space-y-1.5 pb-2"></div>
+                </div>
+
+                <!-- Manual Search/URL Bawah -->
+                <div class="flex gap-1 mt-2 shrink-0 pt-2 border-t border-slate-200">
+                    <input type="text" id="yt-url-input" placeholder="Atau paste URL Youtube..." class="flex-1 p-2 border border-slate-200 bg-white rounded-lg text-[10px] font-bold outline-none focus:border-red-400">
+                    <button onclick="tambahLaguYoutubeManual()" class="bg-slate-800 text-white px-3 rounded-lg font-black text-[10px] hover:bg-slate-700 active:scale-95">ADD</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="subject-bg" id="mathBg"></div>
+
+    <div class="relative z-10 w-full max-w-sm h-full flex flex-col p-2 mx-auto justify-between pb-3 pt-14 sm:pt-12">
+        <div class="flex-1 flex flex-col justify-center gap-1.5 sm:gap-2 w-full min-h-0">
+            
+            <div class="mx-auto flex flex-col items-center mb-1 relative z-30 pointer-events-auto w-full px-2">
+                <div id="equalizer" class="flex items-end justify-center gap-[2px] h-[14px] mb-1 opacity-0 transition-opacity duration-300 w-[80%] max-w-[200px]"></div>
+                <!-- PLAYER UI -->
+                <div id="player-ui" class="bg-indigo-900 border border-slate-700 shadow-[0_4px_15px_rgba(0,0,0,0.3)] rounded-full px-3 py-1 flex items-center justify-between gap-2 w-[85%] sm:w-[90%] max-w-full overflow-hidden shrink cursor-pointer transition-colors duration-300" onclick="bukaManagerMusik()">
+                    <span id="player-icon" class="text-blue-400 text-[11px] shrink-0 animate-pulse">🎵</span>
+                    <div class="marquee-wrapper border-r border-slate-600 pr-1 mr-1 flex-1 shrink"><span id="music-title" class="marquee-text text-[9px] text-white font-black uppercase tracking-widest" style="animation-play-state: paused;">PILIH MUSIK...</span></div>
+                    <div class="flex items-center gap-2 shrink-0">
+                        <button onclick="event.stopPropagation(); prevMusik()" class="text-slate-400 hover:text-white active:scale-90 transition-transform"><svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4h2v12H4V4zm12 0L7 10l9 6V4z"/></svg></button>
+                        <button onclick="event.stopPropagation(); toggleMusik()" id="btn-play-musik" class="text-white hover:text-blue-300 active:scale-90 transition-transform"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" id="icon-play"><path d="M4 4l12 6-12 6V4z"/></svg><svg class="w-4 h-4 hidden" fill="currentColor" viewBox="0 0 20 20" id="icon-pause"><path d="M6 4h3v12H6V4zm5 0h3v12h-3V4z"/></svg></button>
+                        <button onclick="event.stopPropagation(); stopMusik()" class="text-slate-400 hover:text-rose-400 active:scale-90 transition-transform"><svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 3h14v14H3V3z" clip-rule="evenodd"/></svg></button>
+                        <button onclick="event.stopPropagation(); nextMusik()" class="text-slate-400 hover:text-white active:scale-90 transition-transform"><svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M14 4h2v12h-2V4zM4 4l9 6-9 6V4z"/></svg></button>
+                    </div>
+                </div>
+                <input type="file" id="upload-musik" accept="audio/*" multiple class="hidden" onchange="prosesUploadMusik(event)">
+            </div>
+
+            <div class="text-center anim-header w-full">
+                <img src="JUDUL.png" alt="KATES VIP" class="max-h-[6.5vh] object-contain mx-auto drop-shadow-[0_2px_2px_rgba(0,0,0,0.15)]"> 
+                <p class="text-[9px] font-extrabold text-slate-400 tracking-widest mt-0.5">-KALKULATOR TES SISWA VIP-</p>
+            </div>
+
+            <div class="w-full flex items-center justify-between gap-1.5 relative anim-scores">
+                <div class="flex flex-col items-center justify-center flex-1 h-[7.5vh] bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl py-1 border-2 border-blue-300 shadow-sm relative overflow-hidden">
+                    <p class="text-[8px] text-blue-600 font-bold tracking-widest uppercase mb-0.5">Nilai Asli</p>
+                    <div class="text-2xl sm:text-3xl font-black text-blue-700 tabular-nums" id="nilaiAsli">0.00</div>
+                </div>
+                <div id="gif-reaction" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 transition-all duration-300 scale-0 pointer-events-none drop-shadow-lg flex items-center justify-center w-14 h-14 sm:w-20 sm:h-20"></div>
+                <div class="flex flex-col items-center justify-center flex-1 h-[7.5vh] bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl py-1 border-2 border-emerald-300 shadow-sm relative overflow-hidden">
+                    <p class="text-[8px] text-emerald-600 font-bold tracking-widest uppercase mb-0.5">Pembulatan</p>
+                    <div class="text-3xl sm:text-4xl font-black text-emerald-700 tabular-nums" id="nilaiBulat">0</div>
+                </div>
+            </div>
+
+            <div class="anim-classes w-full" id="area-kelas">
+                <div class="grid grid-cols-7 gap-1">
+                    <button id="btn-kls1" data-kelas="kls1" style="--glow-color: rgba(59,130,246,0.4)" class="class-btn rounded-xl py-1 sm:py-1.5 flex flex-col items-center justify-center">
+                        <span id="label-name-kls1" class="text-[9px] font-black">KLS 1</span><span id="label-sub-kls1" class="text-[7.5px] font-bold opacity-80">/55</span>
+                    </button>
+                    <button id="btn-kls2" data-kelas="kls2" style="--glow-color: rgba(16,185,129,0.4)" class="class-btn rounded-xl py-1 sm:py-1.5 flex flex-col items-center justify-center">
+                        <span id="label-name-kls2" class="text-[9px] font-black">KLS 2</span><span id="label-sub-kls2" class="text-[7.5px] font-bold opacity-80">/60</span>
+                    </button>
+                    <button id="btn-kls3" data-kelas="kls3" style="--glow-color: rgba(20,184,166,0.4)" class="class-btn rounded-xl py-1 sm:py-1.5 flex flex-col items-center justify-center">
+                        <span id="label-name-kls3" class="text-[9px] font-black">KLS 3</span><span id="label-sub-kls3" class="text-[7.5px] font-bold opacity-80">/60</span>
+                    </button>
+                    <button id="btn-kls4" data-kelas="kls4" style="--glow-color: rgba(244,63,94,0.4)" class="class-btn rounded-xl py-1 sm:py-1.5 flex flex-col items-center justify-center">
+                        <span id="label-name-kls4" class="text-[9px] font-black">KLS 4</span><span id="label-sub-kls4" class="text-[7.5px] font-bold opacity-80">/65</span>
+                    </button>
+                    <button id="btn-kls5" data-kelas="kls5" style="--glow-color: rgba(217,70,239,0.4)" class="class-btn rounded-xl py-1 sm:py-1.5 flex flex-col items-center justify-center">
+                        <span id="label-name-kls5" class="text-[9px] font-black">KLS 5</span><span id="label-sub-kls5" class="text-[7.5px] font-bold opacity-80">/65</span>
+                    </button>
+                    <button id="btn-kls6" data-kelas="kls6" style="--glow-color: rgba(168,85,247,0.4)" class="class-btn rounded-xl py-1 sm:py-1.5 flex flex-col items-center justify-center">
+                        <span id="label-name-kls6" class="text-[9px] font-black">KLS 6</span><span id="label-sub-kls6" class="text-[7.5px] font-bold opacity-80">/70</span>
+                    </button>
+                    <button id="btn-lain" data-kelas="lain" style="--glow-color: rgba(6,182,212,0.4)" class="class-btn rounded-xl py-1 sm:py-1.5 flex flex-col items-center justify-center">
+                        <span id="label-name-lain" class="text-[8px] font-black tracking-tight text-cyan-600">LAIN</span><span id="label-sub-lain" class="text-[7.5px] font-bold opacity-80">/45</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex justify-center anim-toggle w-full">
+                <div class="bg-white p-0.5 rounded-full flex gap-1 border border-slate-200 w-4/5 shadow-sm relative z-20">
+                    <button onclick="setMode('romawi')" id="tab-romawi" class="flex-1 py-1 rounded-full text-[10px] font-bold transition-all text-slate-500 bg-transparent">ROMAWI</button>
+                    <button onclick="setMode('jumlah')" id="tab-jumlah" class="flex-1 py-1 rounded-full text-[10px] font-bold transition-all bg-amber-400 text-slate-800 shadow-md">JUMLAH</button>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-center anim-input w-full min-h-[50px]">
+                <div id="view-romawi" class="hidden w-full grid-cols-3 gap-2 transition-all duration-300">
+                    <div onclick="setFokus('r1')" id="box-r1" class="bg-white rounded-xl py-1 px-1 border-2 border-slate-200 flex flex-col items-center justify-center cursor-pointer transition-colors input-active">
+                        <label class="text-[8px] font-extrabold text-blue-500 mb-0.5">ROM I (x1)</label><div id="disp-r1" class="text-lg sm:text-xl font-black text-slate-800 empty:after:content-['-'] empty:text-slate-300"></div><span id="max-r1" class="text-[7px] text-slate-400 font-bold">Maks: ?</span>
+                    </div>
+                    <div onclick="setFokus('r2')" id="box-r2" class="bg-white rounded-xl py-1 px-1 border-2 border-slate-200 flex flex-col items-center justify-center cursor-pointer transition-colors">
+                        <label id="label-r2" class="text-[8px] font-extrabold text-emerald-500 mb-0.5">ROM II (x2)</label><div id="disp-r2" class="text-lg sm:text-xl font-black text-slate-800 empty:after:content-['-'] empty:text-slate-300"></div><span id="max-r2" class="text-[7px] text-slate-400 font-bold">Maks: ?</span>
+                    </div>
+                    <div onclick="setFokus('r3')" id="box-r3" class="bg-white rounded-xl py-1 px-1 border-2 border-slate-200 flex flex-col items-center justify-center cursor-pointer transition-colors">
+                        <label class="text-[8px] font-extrabold text-rose-500 mb-0.5">ROM III (x3)</label><div id="disp-r3" class="text-lg sm:text-xl font-black text-slate-800 empty:after:content-['-'] empty:text-slate-300"></div><span id="max-r3" class="text-[7px] text-slate-400 font-bold">Maks: ?</span>
+                    </div>
+                </div>
+                <div id="view-jumlah" class="w-full flex items-center justify-center">
+                    <div onclick="setFokus('total')" id="box-total" class="bg-white rounded-xl py-1 px-4 w-[75%] max-w-[240px] border-2 border-amber-400 shadow-[0_4px_10px_rgba(251,191,36,0.2)] text-center cursor-pointer input-active flex flex-col items-center justify-center transition-all duration-300">
+                        <label class="text-[10px] font-black text-amber-500 tracking-widest uppercase">Total Skormu</label><div id="disp-total" class="text-2xl font-black text-slate-800 empty:after:content-['-'] empty:text-slate-300"></div><span id="max-total" class="text-[8px] text-slate-400 font-bold">Maks: ?</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white/80 backdrop-blur-md p-2 rounded-2xl border border-slate-200 shadow-sm flex flex-col gap-1.5 anim-scores relative z-20 mx-3">
+                <div class="flex items-center justify-between gap-2">
+                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Target Grading:</span>
+                    <button onclick="bukaRekapNilai()" class="text-[10px] bg-indigo-50 text-indigo-600 px-3 py-1 rounded-lg font-black border border-indigo-200 flex items-center gap-1">📊 REKAP & EXCEL</button>
+                </div>
+                <div class="flex gap-1.5 items-center w-full">
+                    <select id="select-kelas-grading" onchange="pilihKelasDariDropdown()" class="custom-select w-[85px] shrink-0 bg-slate-50 border-2 border-slate-200 rounded-xl px-2 py-1.5 text-[10px] font-black text-slate-700 outline-none focus:border-blue-500"></select>
+                    <div class="flex flex-1 gap-1 items-center min-w-0">
+                        <select id="select-siswa" onchange="pilihSiswaManual()" class="custom-select flex-1 min-w-0 bg-slate-50 border-2 border-slate-200 rounded-xl px-2 py-1.5 text-[10px] font-black text-slate-700 outline-none focus:border-blue-500"><option value="">-- SISWA --</option></select>
+                        <button onclick="tambahSiswaCepat()" class="shrink-0 bg-blue-600 text-white rounded-xl h-8 w-8 flex items-center justify-center font-bold hover:bg-blue-700 active:scale-95 transition-all text-sm" title="Manajemen Siswa">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-3 anim-input w-full">
+                <button id="btn-simpan-nilai" onclick="simpanNilaiKeSiswa()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black py-2.5 rounded-2xl shadow-lg shadow-blue-200 hover:from-blue-700 hover:to-indigo-700 active:scale-95 transition-all text-xs flex items-center justify-center gap-2">📥 SIMPAN NILAI SISWA</button>
+            </div>
+        </div>
+
+        <div class="w-[96%] max-w-[360px] mx-auto bg-white rounded-3xl border border-slate-200 shadow-[0_-5px_20px_-10px_rgba(0,0,0,0.05)] p-2.5 pb-3 h-[33vh] max-h-[220px] min-h-[150px] relative z-30 anim-numpad flex-shrink-0 mb-1 mt-1">
+            <div class="grid grid-cols-3 grid-rows-4 gap-2 h-full">
+                <button onclick="tekanTombol('1')" class="numpad-btn text-slate-700 text-lg sm:text-xl">1</button>
+                <button onclick="tekanTombol('2')" class="numpad-btn text-slate-700 text-lg sm:text-xl">2</button>
+                <button onclick="tekanTombol('3')" class="numpad-btn text-slate-700 text-lg sm:text-xl">3</button>
+                <button onclick="tekanTombol('4')" class="numpad-btn text-slate-700 text-lg sm:text-xl">4</button>
+                <button onclick="tekanTombol('5')" class="numpad-btn text-slate-700 text-lg sm:text-xl">5</button>
+                <button onclick="tekanTombol('6')" class="numpad-btn text-slate-700 text-lg sm:text-xl">6</button>
+                <button onclick="tekanTombol('7')" class="numpad-btn text-slate-700 text-lg sm:text-xl">7</button>
+                <button onclick="tekanTombol('8')" class="numpad-btn text-slate-700 text-lg sm:text-xl">8</button>
+                <button onclick="tekanTombol('9')" class="numpad-btn text-slate-700 text-lg sm:text-xl">9</button>
+                <button onclick="tekanTombol('C')" class="numpad-btn text-red-500 bg-red-50 border-red-100">C</button>
+                <button onclick="tekanTombol('0')" class="numpad-btn text-slate-700 text-lg sm:text-xl">0</button>
+                <button onclick="tekanTombol('DEL')" class="numpad-btn text-slate-600 bg-slate-100"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" /></svg></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- YouTube IFrame API Script -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+        // PWA Global Install Prompt Capture
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+
+        function refreshApp() { window.location.href = window.location.pathname + '?v=' + new Date().getTime(); }
+        
+        // Murni bersihkan layar kalkulator (TIDAK menghapus data siswa atau list musik)
+        function bersihkanLayar() {
+            activeKelas = null; activeSiswaId = ""; document.getElementById('area-kelas').classList.remove('needs-class');
+            nilaiInput = { r1: '', r2: '', r3: '', total: '' };
+            ['kls1', 'kls2', 'kls3', 'kls4', 'kls5', 'kls6', 'lain'].forEach(k => {
+                const btn = document.getElementById('btn-' + k);
+                if(btn) { btn.className = btn.className.replace(/bg-\w+-500/g, 'bg-white'); btn.classList.remove('class-active'); }
+            });
+            document.getElementById('select-kelas-grading').innerHTML = '<option value="">-- KELAS --</option>';
+            document.getElementById('select-siswa').innerHTML = '<option value="">-- SISWA --</option>';
+            document.getElementById('max-r1').innerText = 'Maks: ?'; document.getElementById('max-r2').innerText = 'Maks: ?';
+            document.getElementById('max-r3').innerText = 'Maks: ?'; document.getElementById('max-total').innerText = 'Maks: ?';
+            document.getElementById('nilaiAsli').innerText = '0.00'; document.getElementById('nilaiBulat').innerText = '0';
+            const gifEl = document.getElementById('gif-reaction');
+            if(gifEl) { gifEl.classList.remove('scale-100'); gifEl.classList.add('scale-0'); gifEl.innerHTML = ''; }
+            updateTampilan(); setMode('jumlah'); simpanDataOffline();
+        }
+
+        function tampilkanPeringatanLucu(tipe, maxVal = 0) {
+            const popup = document.getElementById('cute-popup'); const box = document.getElementById('cute-popup-box');
+            const emojiEl = document.getElementById('popup-emoji'); const titleEl = document.getElementById('popup-title');
+            const msgEl = document.getElementById('popup-message'); const maxBox = document.getElementById('popup-max-box');
+            if (tipe === 'nokelas') {
+                const variasi = [ { emoji: '🗿', title: 'Woi Bangun!', msg: 'Pilih kategori kelas dulu ngab!' }, { emoji: '☕', title: 'Cuci Muka Duls!', msg: 'Kelasnya belum dipencet tuh~' }, { emoji: '✋', title: 'Eits, Sabar!', msg: 'Main pencet-pencet aja, kelasnya dulu dong!' }, { emoji: '🙈', title: 'Kosong Melompong', msg: 'Klik dulu salah satu kelas di atas!' } ];
+                const rand = variasi[Math.floor(Math.random() * variasi.length)];
+                emojiEl.innerText = rand.emoji; titleEl.innerText = rand.title; titleEl.className = "text-amber-500 font-black text-2xl mb-1";
+                msgEl.innerText = rand.msg; maxBox.classList.add('hidden');
+                box.className = "relative bg-white rounded-[2rem] p-6 shadow-2xl transform scale-50 opacity-0 transition-all duration-300 max-w-[280px] w-4/5 text-center border-4 border-amber-300 flex flex-col items-center";
+            } else if (tipe === 'over') {
+                const variasi = [ { emoji: '🤯', title: 'Kelebihan!!', msg: 'Santai bre, angkanya nembus batas!' }, { emoji: '🤣', title: 'Ngantuk lu ya?', msg: 'Waduh, kebanyakan ngetik tuh!' }, { emoji: '🫣', title: 'Lagi Diskon?', msg: 'Nilainya diobral ya bu? Kelebihan!' }, { emoji: '🐲', title: 'Astaga Naga!', msg: 'Lebih dari batas maksimal woy!' } ];
+                const rand = variasi[Math.floor(Math.random() * variasi.length)];
+                emojiEl.innerText = rand.emoji; titleEl.innerText = rand.title; titleEl.className = "text-rose-500 font-black text-2xl mb-1";
+                msgEl.innerText = rand.msg; maxBox.classList.remove('hidden'); document.getElementById('popup-max-val').innerText = maxVal;
+                box.className = "relative bg-white rounded-[2rem] p-6 shadow-2xl transform scale-50 opacity-0 transition-all duration-300 max-w-[280px] w-4/5 text-center border-4 border-rose-300 flex flex-col items-center";
+            }
+            popup.classList.remove('opacity-0', 'pointer-events-none'); popup.classList.add('opacity-100');
+            setTimeout(() => { box.classList.remove('scale-50', 'opacity-0'); box.classList.add('scale-100', 'opacity-100', 'anim-wiggle'); }, 10);
+            clearTimeout(popupTimeout); popupTimeout = setTimeout(() => { tutupPeringatanLucu(); }, 3000);
+        }
+
+        function tutupPeringatanLucu() {
+            const popup = document.getElementById('cute-popup'); const box = document.getElementById('cute-popup-box');
+            box.classList.remove('scale-100', 'opacity-100', 'anim-wiggle'); box.classList.add('scale-50', 'opacity-0');
+            setTimeout(() => { popup.classList.remove('opacity-100'); popup.classList.add('opacity-0', 'pointer-events-none'); }, 250);
+        }
+
+        // ==========================================
+        // ======= LOGIK POPUP VIP ==================
+        // ==========================================
+        let showChangelogAfterIU = false;
+
+        function cekStatusVIP() {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+            const currentVersion = 'v.26.6.6';
+            const savedVersion = localStorage.getItem('kates_vip_version');
+
+            const btn = document.getElementById('btn-install-update');
+            const emojiEl = document.getElementById('iu-emoji');
+            const titleEl = document.getElementById('iu-title');
+            const msgEl = document.getElementById('iu-message');
+
+            if (!isStandalone) {
+                const variasiInstall = [
+                    { emoji: '📲', title: 'Install Dulu Bosku!', msg: 'Biar aplikasinya full power, anti ngelag, dan bisa dipake offline, wajib install KATES VIP ke HP lo sekarang ygy!', btn: 'INSTALL BRE 🔥' },
+                    { emoji: '🗿', title: 'Kok Lewat Browser?', msg: 'Hari gini masih pake browser? Install Kates VIP sekarang biar jadi sepuh sejati bre!', btn: 'GAS INSTALL 🚀' },
+                    { emoji: '🫵', title: 'Ketahuan Belum Install!', msg: 'Cepetan install aplikasinya biar dapet fitur dewa dan dengerin musik tanpa putus bro!', btn: 'UNDUH BRE 💎' },
+                    { emoji: '😎', title: 'Upgrade ke VIP!', msg: 'Jadikan aplikasinya permanen di HP kamu, performa 100x lipat lebih mulus no debat.', btn: 'SABI BRE ✨' }
+                ];
+                const rand = variasiInstall[Math.floor(Math.random() * variasiInstall.length)];
+                
+                emojiEl.innerText = rand.emoji;
+                titleEl.innerText = rand.title;
+                msgEl.innerText = rand.msg;
+                btn.innerText = rand.btn;
+                
+                btn.onclick = async () => {
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        if (outcome === 'accepted') {
+                            deferredPrompt = null;
+                        }
+                    } else {
+                        alert("Pencet titik tiga ( ⋮ ) di pojok kanan atas browser, trus pilih 'Tambahkan ke Layar Utama' / 'Install App' yak bos!");
+                    }
+                    tutupInstallUpdate();
+                };
+                
+                toggleModal('install-update-modal', true);
+                if(savedVersion !== currentVersion) showChangelogAfterIU = true;
+            } else if (savedVersion !== currentVersion) {
+                const variasiUpdate = [
+                    { emoji: '🚀', title: 'Wajib Update Cuy!', msg: `Versi terbaru KATES VIP ${currentVersion} udah rilis nih bos! Banyak fitur dewa baru. Buruan gas update!`, btn: 'UPDATE BRE 💎' },
+                    { emoji: '🦖', title: 'Versi Lu Kadaluarsa!', msg: `Buset dah masih pake versi lama. Udah ada versi ${currentVersion} nih, jangan mau ketinggalan jaman ygy!`, btn: 'SIKAT BRE 🔥' },
+                    { emoji: '🎁', title: 'Ada Kado Update!', msg: `Paket fitur VIP di versi ${currentVersion} udah nungguin lo. Tinggal klik update dan nikmati kemulusannya!`, btn: 'GAS UPDATE 🚀' },
+                    { emoji: '🤤', title: 'Update Dulu Ngab!', msg: `Fitur baru udah menanti di ${currentVersion}, mulai dari YouTube Player sampai UI Super mulus. Gaskeun!`, btn: 'SABI UPDATE ✨' }
+                ];
+                const rand = variasiUpdate[Math.floor(Math.random() * variasiUpdate.length)];
+                
+                emojiEl.innerText = rand.emoji;
+                titleEl.innerText = rand.title;
+                msgEl.innerText = rand.msg;
+                btn.innerText = rand.btn;
+
+                btn.onclick = () => {
+                    localStorage.setItem('kates_vip_version', currentVersion);
+                    localStorage.setItem('show_changelog_vip', 'yes');
+                    window.location.reload(true);
+                };
+                
+                toggleModal('install-update-modal', true);
+            } else if (localStorage.getItem('show_changelog_vip') === 'yes') {
+                 localStorage.removeItem('show_changelog_vip');
+                 setTimeout(() => toggleModal('changelog-modal', true), 500);
+            }
+        }
+
+        function tutupInstallUpdate() {
+            toggleModal('install-update-modal', false);
+            if (showChangelogAfterIU) {
+                setTimeout(() => { toggleModal('changelog-modal', true); showChangelogAfterIU = false; }, 300);
+                localStorage.setItem('kates_vip_version', 'v.26.6.6');
+            }
+        }
+        
+        function tutupChangelog() {
+            toggleModal('changelog-modal', false);
+        }
+
+        // ==========================================
+        // ======= MODULE MEDIA SESSION =============
+        // ==========================================
+        function updateMediaSession(title, artist, artworkUrl) {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: title,
+                    artist: artist,
+                    album: 'KATES VIP',
+                    artwork: [
+                        { src: artworkUrl || 'LOGO.png', sizes: '512x512', type: 'image/png' }
+                    ]
+                });
+
+                navigator.mediaSession.setActionHandler('play', () => { toggleMusik(); });
+                navigator.mediaSession.setActionHandler('pause', () => { toggleMusik(); });
+                navigator.mediaSession.setActionHandler('previoustrack', () => { prevMusik(); });
+                navigator.mediaSession.setActionHandler('nexttrack', () => { nextMusik(); });
+            }
+        }
+
+        // ==========================================
+        // ======= MODULE MUSIK YOUTUBE EXPLORER ====
+        // ==========================================
+        let isPlaying = false; 
+        let musicMode = 'offline'; 
+
+        let currentAudio = new Audio(); 
+        let currentTrackIndex = 0;
+        
+        // Penambahan Playlist MP3 Baru Sesuai Pesanan
+        let musicLibrary = [
+            { title: 'MBG_Mas Bahlil Ganteng', src: 'MBG_Mas Bahlil Ganteng.mp3' }, 
+            { title: 'BGN_Bos Gizi Nyolong', src: 'BGN_Bos Gizi Nyolong.mp3' },
+            { title: 'Perdamaian', src: 'Perdamaian.mp3' }, 
+            { title: 'Ada Anak Bertanya Pada Bapaknya', src: 'Ada Anak Bertanya Pa.mp3' }, 
+            { title: 'Kusadari Akhirnya', src: 'Kusadari Akhirnya.mp3' }, 
+            { title: 'SurgaMu', src: 'SurgaMu.mp3' }, 
+            { title: 'Sembah Sujudku', src: 'Sembah Sujudku.mp3' }
+        ];
+        
+        let ytPlayer;
+        let isYtReady = false;
+        let currentYtIndex = 0;
+        
+        // Playlist User Tersimpan Sesuai Pesanan Awal + Local Storage
+        let youtubeLibrary = [
+            { title: 'Cafe Vibes Indonesia', id: 'GIxLDvYTGaU', channel: 'Cafe Music', type: 'video' },
+            { title: 'NEW NORMAL KERONCONG', id: 'lkiLjk_7tts', channel: 'Keroncong', type: 'video' }
+        ];
+
+        // Memuat playlist yang tersimpan dari Local Storage (Agar aman saat direfresh)
+        function loadYTLocal() {
+            const saved = localStorage.getItem('kates_yt_lib');
+            if(saved) {
+                try { youtubeLibrary = JSON.parse(saved); } catch(e){}
+            }
+        }
+        function saveYTLocal() {
+            localStorage.setItem('kates_yt_lib', JSON.stringify(youtubeLibrary));
+        }
+
+        // KATEGORI PRESET (Tembak Langsung, Bebas Pencarian Flaky!)
+        const ytPresets = {
+            'Jawa': [
+                { id: 'lHFOzj1_suE', type: 'video', title: 'Denny Caknan Feat Bella Bonita - SINARENGAN', channel: 'Denny Caknan' },
+                { id: 'WZYUSaHlGlk', type: 'video', title: 'Denny Caknan - NEGORO ANGIN', channel: 'Denny Caknan' },
+                { id: 'WlmWXoP0C0s', type: 'video', title: 'Denny Caknan - Kartonyono Medot Janji', channel: 'Denny Caknan' },
+                { id: 'iWit_B3DNsc', type: 'video', title: 'Denny Caknan Feat. Gilga Sahid - NEMEN', channel: 'Denny Caknan' },
+                { id: 'fBnqChaU-ck', type: 'video', title: 'GuyonWaton - Wirang', channel: 'GuyonWaton' },
+                { id: 'NBp3gFJZLBk', type: 'video', title: 'MASDDDHO - KISINAN 2', channel: 'MASDDDHO' },
+                { id: '9X8pLgPwx5o', type: 'video', title: 'Denny Caknan - Cundamani', channel: 'Denny Caknan' },
+                { id: 's525A0Bc3z4', type: 'video', title: 'Denny Caknan - Sigar', channel: 'Denny Caknan' },
+                { id: 'R0OezRPmy6Q', type: 'video', title: 'GuyonWaton - Pelanggaran', channel: 'GuyonWaton' },
+                { id: '1eRYwa-rcj8', type: 'video', title: 'Masdddho - Titeni Lan Enteni', channel: 'Masdddho' },
+                { id: 'Si-lvKJcWLs', type: 'video', title: 'Ndarboy Genk - Mendung Tanpo Udan', channel: 'Ndarboy Genk' },
+                { id: '7YQZUUEh1Rk', type: 'video', title: 'Aftershine Ft. Damara De - Aku Ikhlas', channel: 'Aftershine' },
+                { id: 'Ml42TaBRFPw', type: 'video', title: 'Ndarboy Genk - Koyo Jogja Istimewa', channel: 'Ndarboy Genk' },
+                { id: 'qRUsQyd0lag', type: 'video', title: 'Gilga Sahid (Gildcoustic) - Nemu', channel: 'Gildcoustic' },
+                { id: 'RSWPTbP2uik', type: 'video', title: 'Wawes Ft. GuyonWaton - Dumes', channel: 'Wawes' },
+                { id: 'Tzzdu68zbvQ', type: 'video', title: 'Happy Asmara - Rungkad', channel: 'Happy Asmara' },
+                { id: 'fKVgm3_x-OI', type: 'video', title: 'Denny Caknan ft. Happy Asmara - Satru', channel: 'Denny Caknan' },
+                { id: 'cmD9vPWi9h4', type: 'video', title: 'Ndarboy Genk - Balungan Kere', channel: 'Ndarboy Genk' },
+                { id: 'S0kaqFBoGqI', type: 'video', title: 'GuyonWaton - Korban Janji', channel: 'GuyonWaton' },
+                { id: 'Xo9egupmgoE', type: 'video', title: 'Didi Kempot - Pamer Bojo', channel: 'Didi Kempot' },
+                { id: 'PLZvTiXDi9xqC8Zn4rGuUQgEn3lD6dDNM7', type: 'playlist', title: 'Mix Lagu Jawa Indonesia Terbaru', channel: 'Jawa Hits' }
+            ],
+            'Indo': [
+                { id: 'nEszH6h2aRw', type: 'video', title: 'Ungu - Demi Waktu', channel: 'UNGU' },
+                { id: 'Q-xL479Vb8A', type: 'video', title: 'Ungu - Tercipta Untukku', channel: 'UNGU' },
+                { id: 'hT8C6xL02uQ', type: 'video', title: 'Ungu - Cinta Dalam Hati', channel: 'UNGU' },
+                { id: '2V1gDIfE2W0', type: 'video', title: 'Ungu - Kekasih Gelapku', channel: 'UNGU' },
+                { id: 'W0v4n4c2gEE', type: 'video', title: 'Ungu - Andai Ku Tahu', channel: 'UNGU' },
+                { id: 'p0Q-m5Y_3pI', type: 'video', title: 'Ungu - Sejauh Mungkin', channel: 'UNGU' },
+                { id: 'k9X6j8k6nQk', type: 'video', title: 'Wali - Baik Baik Sayang', channel: 'WALI' },
+                { id: '7o0H7xG8m0U', type: 'video', title: 'Wali - Cari Jodoh', channel: 'WALI' },
+                { id: 'Y7l6m0g8aQk', type: 'video', title: 'Wali - Dik', channel: 'WALI' },
+                { id: 'q9Q3h4k8nU0', type: 'video', title: 'Wali - Yank', channel: 'WALI' },
+                { id: 'Z7l9k5j4qG8', type: 'video', title: 'Kangen Band - Yolanda', channel: 'Kangen Band' },
+                { id: 'p4T5n8c9rV0', type: 'video', title: 'Kangen Band - Tentang Aku, Kau, Dan Dia', channel: 'Kangen Band' },
+                { id: 'B2m8v6c4zX0', type: 'video', title: 'Kangen Band - Pujaan Hati', channel: 'Kangen Band' },
+                { id: 'X9v3m5b2kG0', type: 'video', title: 'Peterpan - Bintang di Surga', channel: 'Noah' },
+                { id: 'V4b6n8c9zM0', type: 'video', title: 'Peterpan - Yang Terdalam', channel: 'Noah' },
+                { id: 'P8v2k4n6cZ0', type: 'video', title: 'Peterpan - Mungkin Nanti', channel: 'Noah' },
+                { id: 'z1m8k4v9cX0', type: 'video', title: 'NOAH - Separuh Aku', channel: 'Noah' },
+                { id: 'x5b2n9c4vM0', type: 'video', title: 'Sheila On 7 - Dan', channel: 'Sheila On 7' },
+                { id: 'c4v8b2n9mX0', type: 'video', title: 'Sheila On 7 - Sephia', channel: 'Sheila On 7' },
+                { id: 'k4n9c2b8vM0', type: 'video', title: 'D\'Masiv - Cinta Ini Membunuhku', channel: 'D\'Masiv' },
+                { id: 'v2c8b9n4mM0', type: 'video', title: 'Armada - Asal Kau Bahagia', channel: 'Armada' },
+                { id: 'PLU4GTyMETaQ5I6BAekRLnVfd-WtBszMSW', type: 'playlist', title: 'Wali - Full Album', channel: 'WALI' },
+                { id: 'RDEMGddYAh8fMWgpZ17szTAWgw', type: 'playlist', title: 'Ungu - Mix', channel: 'UNGU' },
+                { id: 'PLU4GTyMETaQ4vvtliE4OWIAdM06nhjRG8', type: 'playlist', title: 'Sheila On 7 - Best Of', channel: 'Sheila On 7' },
+                { id: 'PLW_i3VU4-wwZ1aGBQbaPl2KJoArwSYpEb', type: 'playlist', title: 'Noah - Top Hits', channel: 'NOAH' }
+            ],
+            'Luar': [
+                { id: 'G7KNmW9a75Y', type: 'video', title: 'Miley Cyrus - Flowers', channel: 'Miley Cyrus' },
+                { id: 'H5v3kku4y6Q', type: 'video', title: 'Harry Styles - As It Was', channel: 'Harry Styles' },
+                { id: 'b1kbLwvqugk', type: 'video', title: 'Taylor Swift - Anti-Hero', channel: 'Taylor Swift' },
+                { id: '4NRXx6U8ABQ', type: 'video', title: 'The Weeknd - Blinding Lights', channel: 'The Weeknd' },
+                { id: 'oygrmJFKYZY', type: 'video', title: 'Dua Lipa - Don\'t Start Now', channel: 'Dua Lipa' },
+                { id: 'DyDfgMOUjCI', type: 'video', title: 'Billie Eilish - bad guy', channel: 'Billie Eilish' },
+                { id: 'ZmDBbnmKpqQ', type: 'video', title: 'Olivia Rodrigo - drivers license', channel: 'Olivia Rodrigo' },
+                { id: 'JGwWNGJdvx8', type: 'video', title: 'Ed Sheeran - Shape of You', channel: 'Ed Sheeran' },
+                { id: 'OPf0YbXqDm0', type: 'video', title: 'Mark Ronson ft. Bruno Mars - Uptown Funk', channel: 'Mark Ronson' },
+                { id: '09R8_2nJtjg', type: 'video', title: 'Maroon 5 - Sugar', channel: 'Maroon 5' },
+                { id: 'fRh_vgS2dFE', type: 'video', title: 'Justin Bieber - Sorry', channel: 'Justin Bieber' },
+                { id: 'CevxZvSJLk8', type: 'video', title: 'Katy Perry - Roar', channel: 'Katy Perry' },
+                { id: 'hT_nvWreIhg', type: 'video', title: 'OneRepublic - Counting Stars', channel: 'OneRepublic' },
+                { id: '3AtDnEC4zak', type: 'video', title: 'Charlie Puth ft. Selena Gomez - We Don\'t Talk Anymore', channel: 'Charlie Puth' },
+                { id: 'Pkh8UtuejGw', type: 'video', title: 'Shawn Mendes, Camila Cabello - Señorita', channel: 'Shawn Mendes' },
+                { id: 'rYEDA3JcQqw', type: 'video', title: 'Adele - Rolling in the Deep', channel: 'Adele' },
+                { id: 'LjhCEhWiKXk', type: 'video', title: 'Bruno Mars - Just The Way You Are', channel: 'Bruno Mars' },
+                { id: 'VPRjCeoBqrI', type: 'video', title: 'Coldplay - A Sky Full of Stars', channel: 'Coldplay' },
+                { id: 'tg00YEETFzg', type: 'video', title: 'Rihanna ft. Calvin Harris - We Found Love', channel: 'Rihanna' },
+                { id: 'bo_efYhYU2A', type: 'video', title: 'Lady Gaga, Bradley Cooper - Shallow', channel: 'Lady Gaga' },
+                { id: 'ru0K8uYEZWw', type: 'video', title: 'Justin Timberlake - Can\'t Stop the Feeling!', channel: 'Justin Timberlake' },
+                { id: 'lp-EO5I60KA', type: 'video', title: 'Ed Sheeran - Thinking Out Loud', channel: 'Ed Sheeran' },
+                { id: 'e-ORhEE9VVg', type: 'video', title: 'Taylor Swift - Blank Space', channel: 'Taylor Swift' },
+                { id: '450p7goxZqg', type: 'video', title: 'John Legend - All of Me', channel: 'John Legend' },
+                { id: '2vjPBrBU-TM', type: 'video', title: 'Sia - Chandelier', channel: 'Sia' },
+                { id: 'PLeA8PwIGIvy13ttPOUueS8pv0u6E081j6', type: 'playlist', title: 'Top Hits Pop Luar Negeri', channel: 'Pop Barat' }
+            ],
+            'Murotal': [
+                { id: 'VYql3txo_vE', type: 'video', title: 'Juz 30 Full', channel: 'Murottal' },
+                { id: 'Q8fQoW9lygg', type: 'video', title: 'Juz 29 Full', channel: 'Murottal' }
+            ]
+        };
+
+        function onYouTubeIframeAPIReady() {
+            ytPlayer = new YT.Player('ytplayer', {
+                height: '100%', width: '100%', videoId: '', 
+                playerVars: { 'playsinline': 1, 'autoplay': 0 },
+                events: { 'onReady': () => { isYtReady = true; }, 'onStateChange': onPlayerStateChange }
+            });
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data == YT.PlayerState.PLAYING) {
+                isPlaying = true;
+                let videoData = ytPlayer.getVideoData();
+                if(videoData && videoData.title && youtubeLibrary[currentYtIndex]) {
+                    if (youtubeLibrary[currentYtIndex].title.includes('Custom') || youtubeLibrary[currentYtIndex].title.includes('Playlist')) {
+                         youtubeLibrary[currentYtIndex].title = videoData.title; // Update ke judul asli yg lagi main
+                         saveYTLocal();
+                    }
+                    document.getElementById('music-title').innerText = videoData.title;
+                    updateMediaSession(videoData.title, youtubeLibrary[currentYtIndex].channel || 'YouTube Media', `https://img.youtube.com/vi/${videoData.video_id || youtubeLibrary[currentYtIndex].id}/hqdefault.jpg`);
+                }
+                updateUIPlayer();
+            } else if (event.data == YT.PlayerState.PAUSED || event.data == YT.PlayerState.ENDED) {
+                isPlaying = false;
+                updateUIPlayer();
+                if(event.data == YT.PlayerState.ENDED) nextMusik();
+            }
+        }
+
+        function setMusicMode(mode) {
+            if (musicMode !== mode) stopMusik(); 
+            musicMode = mode;
+            
+            document.getElementById('tab-music-offline').className = mode === 'offline' ? "flex-1 py-1.5 text-[10px] font-black rounded-md bg-white shadow-sm text-blue-600 transition-all flex items-center justify-center gap-1" : "flex-1 py-1.5 text-[10px] font-black rounded-md text-slate-500 hover:text-slate-700 transition-all flex items-center justify-center gap-1";
+            document.getElementById('tab-music-online').className = mode === 'online' ? "flex-1 py-1.5 text-[10px] font-black rounded-md bg-white shadow-sm text-red-500 transition-all flex items-center justify-center gap-1" : "flex-1 py-1.5 text-[10px] font-black rounded-md text-slate-500 hover:text-slate-700 transition-all flex items-center justify-center gap-1";
+            
+            document.getElementById('container-offline').classList.toggle('hidden', mode === 'online');
+            document.getElementById('container-offline').classList.toggle('flex', mode === 'offline');
+            document.getElementById('container-online').classList.toggle('hidden', mode === 'offline');
+            document.getElementById('container-online').classList.toggle('flex', mode === 'online');
+
+            const playerUi = document.getElementById('player-ui');
+            const iconUi = document.getElementById('player-icon');
+            if(mode === 'online') {
+                playerUi.className = "bg-red-950 border border-slate-700 shadow-[0_4px_15px_rgba(0,0,0,0.3)] rounded-full px-3 py-1 flex items-center justify-between gap-2 w-[85%] sm:w-[90%] max-w-full overflow-hidden shrink cursor-pointer transition-colors duration-300";
+                iconUi.innerHTML = `<svg class="w-3.5 h-3.5 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>`;
+                showYtPlaylistView();
+            } else {
+                playerUi.className = "bg-indigo-900 border border-slate-700 shadow-[0_4px_15px_rgba(0,0,0,0.3)] rounded-full px-3 py-1 flex items-center justify-between gap-2 w-[85%] sm:w-[90%] max-w-full overflow-hidden shrink cursor-pointer transition-colors duration-300";
+                iconUi.innerHTML = "🎵";
+            }
+            document.getElementById('music-title').innerText = "SIAP MEMUTAR...";
+            bukaManagerMusik();
+        }
+
+        function showYtPlaylistView() {
+            document.getElementById('yt-search-results').classList.add('hidden');
+            document.getElementById('playlist-container-online').classList.remove('hidden');
+            document.getElementById('btn-back-playlist').classList.add('hidden');
+            document.getElementById('yt-view-title').innerText = "PLAYLIST TERSIMPAN";
+        }
+
+        function showYtSearchView() {
+            document.getElementById('playlist-container-online').classList.add('hidden');
+            document.getElementById('yt-search-results').classList.remove('hidden');
+            document.getElementById('btn-back-playlist').classList.remove('hidden');
+            document.getElementById('yt-view-title').innerText = "HASIL PENCARIAN & KOLEKSI VIP";
+        }
+
+        // FUNGSI PENCARIAN TINGKAT DEWA (PROMISE RACING ANTI LEMOT)
+        async function executeYTSearch() {
+            const query = document.getElementById('yt-search-input').value.trim();
+            if(!query) return;
+            
+            showYtSearchView();
+            const resultBox = document.getElementById('yt-search-results');
+            resultBox.innerHTML = '<div class="flex flex-col items-center justify-center py-6 opacity-70"><div class="animate-spin rounded-full h-6 w-6 border-2 border-red-500 border-t-transparent mb-3"></div><p class="text-[10px] font-bold text-slate-500 text-center leading-tight">Mencari kilat... 🚀</p></div>';
+
+            const apis = [
+                `https://pipedapi.kavin.rocks/search?q=${encodeURIComponent(query)}&filter=music_songs`,
+                `https://pipedapi.tokhmi.xyz/search?q=${encodeURIComponent(query)}&filter=music_songs`,
+                `https://api.piped.projectsegfau.lt/search?q=${encodeURIComponent(query)}&filter=music_songs`,
+                `https://pipedapi.smnz.de/search?q=${encodeURIComponent(query)}&filter=music_songs`,
+                `https://piped-api.lunar.icu/search?q=${encodeURIComponent(query)}&filter=music_songs`,
+                `https://invidious.jing.rocks/api/v1/search?q=${encodeURIComponent(query)}`,
+                `https://inv.tux.pizza/api/v1/search?q=${encodeURIComponent(query)}`
+            ];
+            
+            try {
+                // Timeout super singkat 4 detik
+                const fetchPromises = apis.map(api => fetch(api, { signal: AbortSignal.timeout(4000) }).then(async r => {
+                    if (!r.ok) throw new Error('Bad response');
+                    const json = await r.json();
+                    if ((json.items && json.items.length === 0) || (Array.isArray(json) && json.length === 0)) throw new Error('Empty');
+                    return json;
+                }));
+
+                const data = await Promise.any(fetchPromises);
+                
+                let streams = [];
+                if (data.items) { 
+                    streams = data.items.filter(i => i.type === 'stream').slice(0, 15).map(i => ({
+                        id: i.url.split('?v=')[1] || i.url.split('/watch?v=')[1], title: i.title, channel: i.uploaderName, thumb: i.thumbnail
+                    }));
+                } else if (Array.isArray(data)) {
+                    streams = data.slice(0, 15).map(i => ({
+                        id: i.videoId, title: i.title, channel: i.author, thumb: i.videoThumbnails?.[1]?.url || i.videoThumbnails?.[0]?.url || `https://img.youtube.com/vi/${i.videoId}/0.jpg`
+                    }));
+                }
+
+                if(streams.length > 0) {
+                    resultBox.innerHTML = '';
+                    streams.forEach(item => { if(item.id) renderYTResultItem(item.id, item.title, item.channel, item.thumb); });
+                    return; 
+                }
+                throw new Error("Kosong");
+            } catch(e) {
+                // FALLBACK ALLORIGINS JIKA SEMUA SERVER MATI
+                try {
+                    const proxy = 'https://api.allorigins.win/get?url=';
+                    const targetUrl = encodeURIComponent(`https://m.youtube.com/results?search_query=${encodeURIComponent(query)}`);
+                    const res = await fetch(proxy + targetUrl, { signal: AbortSignal.timeout(5000) });
+                    const json = await res.json();
+                    const text = json.contents;
+
+                    let dataStr = "";
+                    const match1 = text.match(/var ytInitialData = (\{.*?\});<\/script>/);
+                    const match2 = text.match(/window\["ytInitialData"\] = (\{.*?\});/);
+                    if(match1) dataStr = match1[1];
+                    else if(match2) dataStr = match2[1];
+
+                    if(dataStr) {
+                        const data = JSON.parse(dataStr);
+                        let results = [];
+                        function extractVideos(obj) {
+                            if (results.length >= 15) return;
+                            if (typeof obj !== 'object' || obj === null) return;
+                            if (obj.compactVideoRenderer && obj.compactVideoRenderer.videoId) {
+                                 let id = obj.compactVideoRenderer.videoId;
+                                 let title = obj.compactVideoRenderer.title?.runs?.[0]?.text || "Unknown";
+                                 let channel = obj.compactVideoRenderer.shortBylineText?.runs?.[0]?.text || "YouTube";
+                                 if(!results.find(x => x.id === id)) results.push({id, title, channel});
+                            }
+                            if(Array.isArray(obj)) {
+                                for(let item of obj) extractVideos(item);
+                            } else {
+                                for (let k in obj) extractVideos(obj[k]);
+                            }
+                        }
+                        extractVideos(data);
+                        if(results.length > 0) {
+                            resultBox.innerHTML = '';
+                            results.forEach(item => renderYTResultItem(item.id, item.title, item.channel, `https://img.youtube.com/vi/${item.id}/0.jpg`));
+                            return; 
+                        }
+                    }
+                    throw new Error("Scraping fallback failed");
+                } catch(err) {
+                    resultBox.innerHTML = '<div class="bg-rose-50 text-rose-500 text-[9px] text-center p-2 rounded-lg font-bold mb-2 border border-rose-100">Yah server pencarian lagi sibuk banget bree. 😭<br>Coba klik kategori koleksi di atas aja ya!</div>';
+                }
+            }
+        }
+
+        // Tembak Langsung Koleksi (Anti-Loading)
+        function loadPresetYT(cat) {
+            showYtSearchView();
+            const resultBox = document.getElementById('yt-search-results');
+            resultBox.innerHTML = '';
+            
+            ytPresets[cat].forEach(item => {
+                const thumb = item.type === 'playlist' ? 'LOGO.png' : `https://img.youtube.com/vi/${item.id}/0.jpg`;
+                const row = document.createElement('div');
+                row.className = "flex gap-2.5 p-1.5 hover:bg-slate-50 cursor-pointer rounded-xl border border-transparent hover:border-slate-200 transition-all active:scale-[0.98]";
+                
+                const safeTitle = item.title.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                const safeChannel = item.channel.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                
+                row.setAttribute('onclick', `tambahDanPutarYT('${item.id}', '${safeTitle}', '${safeChannel}', '${item.type}')`);
+                row.innerHTML = `
+                    <div class="w-20 h-[50px] shrink-0 relative rounded-lg overflow-hidden bg-slate-200 shadow-sm border border-slate-100 flex items-center justify-center">
+                        ${item.type === 'playlist' ? `<span class="text-2xl">📑</span>` : `<img src="${thumb}" onerror="this.src='LOGO.png'" class="w-full h-full object-cover">`}
+                        <div class="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors"></div>
+                    </div>
+                    <div class="flex flex-col justify-center min-w-0 pr-1 py-0.5">
+                        <p class="text-[11px] font-black text-slate-800 line-clamp-2 leading-tight">${item.title}</p>
+                        <p class="text-[9px] font-bold text-slate-400 mt-1 truncate flex items-center gap-1"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg> ${item.channel}</p>
+                    </div>
+                `;
+                resultBox.appendChild(row);
+            });
+        }
+
+        function renderYTResultItem(id, title, channel, thumbUrl) {
+            const resultBox = document.getElementById('yt-search-results');
+            const row = document.createElement('div');
+            row.className = "flex gap-2.5 p-1.5 hover:bg-slate-50 cursor-pointer rounded-xl border border-transparent hover:border-slate-200 transition-all active:scale-[0.98]";
+            const safeTitle = title.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+            const safeChannel = channel.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+            row.setAttribute('onclick', `tambahDanPutarYT('${id}', '${safeTitle}', '${safeChannel}')`);
+            row.innerHTML = `
+                <div class="w-20 h-[50px] shrink-0 relative rounded-lg overflow-hidden bg-slate-200 shadow-sm border border-slate-100">
+                    <img src="${thumbUrl}" onerror="this.src='https://img.youtube.com/vi/${id}/0.jpg'" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black/10 hover:bg-transparent transition-colors"></div>
+                </div>
+                <div class="flex flex-col justify-center min-w-0 pr-1 py-0.5">
+                    <p class="text-[11px] font-black text-slate-800 line-clamp-2 leading-tight">${title}</p>
+                    <p class="text-[9px] font-bold text-slate-400 mt-1 truncate flex items-center gap-1"><svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg> ${channel}</p>
+                </div>
+            `;
+            resultBox.appendChild(row);
+        }
+
+        function tambahDanPutarYT(id, title, channel, type = 'video') {
+            youtubeLibrary.push({ title: title, id: id, channel: channel, type: type });
+            saveYTLocal();
+            currentYtIndex = youtubeLibrary.length - 1;
+            setTrackOnline(currentYtIndex);
+            
+            showYtPlaylistView();
+            bukaManagerMusik();
+            
+            if(isYtReady) {
+                if(type === 'playlist') ytPlayer.loadPlaylist({list: id});
+                else ytPlayer.playVideo();
+            }
+            toggleModal('music-manager-modal', false);
+        }
+
+        function extractYTId(url) {
+            let regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            let match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        function tambahLaguYoutubeManual() {
+            let input = document.getElementById('yt-url-input');
+            let url = input.value.trim();
+            if(!url) return;
+            
+            let listMatch = url.match(/[?&]list=([a-zA-Z0-9_-]+)/);
+            let videoMatch = url.match(/(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*)/);
+
+            if(listMatch && listMatch[1]) {
+                tambahDanPutarYT(listMatch[1], 'Custom Playlist', 'YouTube', 'playlist');
+            } else if(videoMatch && videoMatch[1].length === 11) {
+                tambahDanPutarYT(videoMatch[1], 'Custom Video', 'YouTube', 'video');
+            } else {
+                alert("Link YouTube tidak valid!");
+            }
+            input.value = '';
+        }
+
+        function triggerUploadMusik() { document.getElementById('upload-musik').click(); }
+        function prosesUploadMusik(event) {
+            const files = event.target.files; if (files.length === 0) return; let addedCount = 0;
+            for (let i = 0; i < files.length; i++) { if (files[i].type.startsWith('audio/')) { musicLibrary.push({ title: files[i].name.replace(/\.[^/.]+$/, ""), src: URL.createObjectURL(files[i]) }); addedCount++; } }
+            if (addedCount > 0) { alert(`${addedCount} MP3 ditambahkan! 🎶`); setTrackOffline(musicLibrary.length - addedCount); if (!isPlaying) toggleMusik(); bukaManagerMusik(); }
+            event.target.value = '';
+        }
+
+        function bukaManagerMusik() {
+            // Render Offline
+            const conOff = document.getElementById('playlist-container-offline'); conOff.innerHTML = '';
+            if (musicLibrary.length === 0) { conOff.innerHTML = '<p class="text-center text-xs text-slate-400 py-6 italic font-bold">Daftar putar kosong.</p>'; } else {
+                musicLibrary.forEach((track, index) => {
+                    const isActive = (musicMode === 'offline' && index === currentTrackIndex);
+                    const row = document.createElement('div');
+                    row.className = `flex justify-between items-center p-2 rounded-xl border cursor-pointer transition-colors ${isActive ? 'bg-indigo-50 border-indigo-200 transform scale-[1.02] shadow-sm' : 'bg-white border-slate-100 hover:bg-slate-50'}`;
+                    const eqIndicator = isActive && isPlaying ? `<div class="flex items-end gap-[1px] h-[10px] ml-1"><div class="w-1 bg-indigo-500 rounded-sm animate-[eq-bounce_0.4s_ease-in-out_infinite_alternate]" style="height: 4px;"></div><div class="w-1 bg-indigo-500 rounded-sm animate-[eq-bounce_0.3s_ease-in-out_infinite_alternate]" style="height: 8px;"></div><div class="w-1 bg-indigo-500 rounded-sm animate-[eq-bounce_0.5s_ease-in-out_infinite_alternate]" style="height: 6px;"></div></div>` : '';
+                    row.innerHTML = `<div class="flex-1 min-w-0 pr-2 flex items-center gap-1.5" onclick="setTrackOffline(${index}); toggleMusik(); bukaManagerMusik();"><span class="text-[11px] font-black truncate ${isActive ? 'text-indigo-600' : 'text-slate-600'}">${index + 1}. ${track.title}</span>${eqIndicator}</div><button onclick="event.stopPropagation(); hapusLagu('offline', ${index})" class="text-rose-400 hover:text-rose-600 hover:bg-rose-50 p-1.5 rounded-lg active:scale-90 shrink-0 transition-colors" title="Hapus"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>`;
+                    conOff.appendChild(row);
+                });
+            }
+
+            // Render Online Playlist
+            const conOn = document.getElementById('playlist-container-online'); conOn.innerHTML = '';
+            if (youtubeLibrary.length === 0) { conOn.innerHTML = '<p class="text-center text-xs text-slate-400 py-6 italic font-bold">Belum ada lagu tersimpan.</p>'; } else {
+                youtubeLibrary.forEach((track, index) => {
+                    const isActive = (musicMode === 'online' && index === currentYtIndex);
+                    const row = document.createElement('div');
+                    row.className = `flex justify-between items-center p-2 rounded-xl border cursor-pointer transition-colors ${isActive ? 'bg-red-50 border-red-200 transform scale-[1.02] shadow-sm' : 'bg-white border-slate-100 hover:bg-slate-50'}`;
+                    const eqIndicator = isActive && isPlaying ? `<div class="flex items-end gap-[1px] h-[10px] ml-1"><div class="w-1 bg-red-500 rounded-sm animate-[eq-bounce_0.4s_ease-in-out_infinite_alternate]" style="height: 4px;"></div><div class="w-1 bg-red-500 rounded-sm animate-[eq-bounce_0.3s_ease-in-out_infinite_alternate]" style="height: 8px;"></div><div class="w-1 bg-red-500 rounded-sm animate-[eq-bounce_0.5s_ease-in-out_infinite_alternate]" style="height: 6px;"></div></div>` : '';
+                    
+                    const thumbImg = track.type === 'playlist' ? '<span class="text-2xl">📑</span>' : `<img src="https://img.youtube.com/vi/${track.id}/0.jpg" onerror="this.src='LOGO.png'" class="w-full h-full object-cover">`;
+
+                    row.innerHTML = `<div class="flex-1 min-w-0 pr-2 flex items-center gap-2" onclick="setTrackOnline(${index}); if(isYtReady){if('${track.type}'==='playlist')ytPlayer.loadPlaylist({list:'${track.id}'});else ytPlayer.playVideo();} bukaManagerMusik();"><div class="w-10 h-7 shrink-0 rounded overflow-hidden shadow-sm flex items-center justify-center bg-slate-200">${thumbImg}</div><div class="flex flex-col min-w-0"><span class="text-[10px] font-black truncate ${isActive ? 'text-red-600' : 'text-slate-700'}">${index + 1}. ${track.title}</span><span class="text-[8px] text-slate-400 font-bold truncate">${track.channel || 'YouTube Media'}</span></div>${eqIndicator}</div><button onclick="event.stopPropagation(); hapusLagu('online', ${index})" class="text-rose-400 hover:text-rose-600 hover:bg-rose-50 p-1.5 rounded-lg active:scale-90 shrink-0 transition-colors" title="Hapus"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>`;
+                    conOn.appendChild(row);
+                });
+            }
+
+            const modal = document.getElementById('music-manager-modal');
+            if(modal.classList.contains('pointer-events-none')) toggleModal('music-manager-modal', true);
+        }
+
+        function hapusLagu(type, index) {
+            if(confirm(`Hapus lagu ini?`)) { 
+                if(type === 'offline') {
+                    musicLibrary.splice(index, 1); 
+                    if (musicLibrary.length === 0) { stopMusik(); } 
+                    else if (index <= currentTrackIndex) { currentTrackIndex = Math.max(0, currentTrackIndex - 1); setTrackOffline(currentTrackIndex); if (isPlaying) currentAudio.play(); } 
+                } else {
+                    youtubeLibrary.splice(index, 1);
+                    saveYTLocal();
+                    if (youtubeLibrary.length === 0) { stopMusik(); } 
+                    else if (index <= currentYtIndex) { currentYtIndex = Math.max(0, currentYtIndex - 1); setTrackOnline(currentYtIndex); if (isPlaying) { if(youtubeLibrary[currentYtIndex].type === 'playlist') ytPlayer.loadPlaylist({list: youtubeLibrary[currentYtIndex].id}); else ytPlayer.playVideo(); } } 
+                }
+                bukaManagerMusik(); 
+            } 
+        }
+
+        function renderEqualizer() {
+            const eqContainer = document.getElementById('equalizer'); eqContainer.innerHTML = '';
+            for (let i = 0; i < 25; i++) { const bar = document.createElement('div'); bar.className = 'eq-bar'; bar.style.height = `${Math.floor(Math.random() * 10) + 4}px`; bar.style.animationDelay = `${Math.random() * 0.5}s`; eqContainer.appendChild(bar); }
+        }
+
+        function setTrackOffline(index) {
+            if(musicMode !== 'offline') return;
+            if(musicLibrary.length === 0) return;
+            currentTrackIndex = index; currentAudio.src = musicLibrary[currentTrackIndex].src;
+            const titleEl = document.getElementById('music-title'); titleEl.innerText = musicLibrary[currentTrackIndex].title;
+            if (musicLibrary[currentTrackIndex].title.length > 18) { titleEl.classList.add('marquee-text'); } else { titleEl.classList.remove('marquee-text'); }
+            renderEqualizer();
+            updateMediaSession(musicLibrary[currentTrackIndex].title, "MP3 Lokal", "LOGO.png");
+        }
+
+        function setTrackOnline(index) {
+            if(musicMode !== 'online') return;
+            if(!isYtReady || youtubeLibrary.length === 0) return;
+            currentYtIndex = index; 
+            const track = youtubeLibrary[currentYtIndex];
+            
+            if(track.type === 'playlist') {
+                ytPlayer.loadPlaylist({list: track.id});
+            } else {
+                ytPlayer.loadVideoById(track.id);
+            }
+            
+            const titleEl = document.getElementById('music-title'); titleEl.innerText = track.title;
+            if (track.title.length > 18) { titleEl.classList.add('marquee-text'); } else { titleEl.classList.remove('marquee-text'); }
+            renderEqualizer();
+            // Metadata Media Session YouTube dihandle dinamis di onPlayerStateChange
+        }
+
+        function updateUIPlayer() {
+            const titleEl = document.getElementById('music-title');
+            if (isPlaying) {
+                document.getElementById('icon-play').classList.add('hidden'); document.getElementById('icon-pause').classList.remove('hidden'); 
+                document.getElementById('equalizer').classList.remove('opacity-0'); document.getElementById('equalizer').classList.add('opacity-100'); 
+                if(titleEl.classList.contains('marquee-text')) titleEl.style.animationPlayState = 'running';
+            } else {
+                document.getElementById('icon-play').classList.remove('hidden'); document.getElementById('icon-pause').classList.add('hidden'); 
+                document.getElementById('equalizer').classList.remove('opacity-100'); document.getElementById('equalizer').classList.add('opacity-0'); 
+                if(titleEl.classList.contains('marquee-text')) titleEl.style.animationPlayState = 'paused';
+            }
+            if (!document.getElementById('music-manager-modal').classList.contains('pointer-events-none')) bukaManagerMusik();
+        }
+
+        function toggleMusik() {
+            if (musicMode === 'offline') {
+                if (musicLibrary.length === 0) return alert("Daftar putar kosong!");
+                if (!currentAudio.src) setTrackOffline(0);
+                if (isPlaying) { currentAudio.pause(); isPlaying = false; } else { currentAudio.play().catch(e => console.log(e)); isPlaying = true; }
+                updateUIPlayer();
+            } else {
+                if (youtubeLibrary.length === 0) return alert("Playlist YouTube kosong! Add dari daftar Koleksi.");
+                if (!isYtReady) return alert("Menyiapkan koneksi ke YouTube, tunggu sebentar...");
+                
+                let state = ytPlayer.getPlayerState();
+                if (state == YT.PlayerState.PLAYING) {
+                    ytPlayer.pauseVideo();
+                } else {
+                    let url = ytPlayer.getVideoUrl();
+                    if(!url || url.includes('undefined')) setTrackOnline(currentYtIndex);
+                    else ytPlayer.playVideo();
+                }
+            }
+        }
+
+        function stopMusik() { 
+            if (musicMode === 'offline' && currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; } 
+            if (musicMode === 'online' && isYtReady) { ytPlayer.stopVideo(); }
+            isPlaying = false; 
+            updateUIPlayer();
+            document.getElementById('music-title').style.transform = 'translate(0, 0)'; 
+        }
+
+        function nextMusik() { 
+            if (musicMode === 'offline') {
+                if (musicLibrary.length === 0) return; 
+                currentTrackIndex = (currentTrackIndex + 1) % musicLibrary.length; setTrackOffline(currentTrackIndex); if (isPlaying) currentAudio.play();
+            } else {
+                if (youtubeLibrary.length === 0 || !isYtReady) return; 
+                currentYtIndex = (currentYtIndex + 1) % youtubeLibrary.length; setTrackOnline(currentYtIndex);
+                if (isPlaying) {
+                    if(youtubeLibrary[currentYtIndex].type === 'playlist') ytPlayer.loadPlaylist({list: youtubeLibrary[currentYtIndex].id});
+                    else ytPlayer.playVideo();
+                }
+            }
+            updateUIPlayer();
+        }
+
+        function prevMusik() { 
+            if (musicMode === 'offline') {
+                if (musicLibrary.length === 0) return; 
+                currentTrackIndex = (currentTrackIndex - 1 + musicLibrary.length) % musicLibrary.length; setTrackOffline(currentTrackIndex); if (isPlaying) currentAudio.play();
+            } else {
+                if (youtubeLibrary.length === 0 || !isYtReady) return; 
+                currentYtIndex = (currentYtIndex - 1 + youtubeLibrary.length) % youtubeLibrary.length; setTrackOnline(currentYtIndex); 
+                if (isPlaying) {
+                    if(youtubeLibrary[currentYtIndex].type === 'playlist') ytPlayer.loadPlaylist({list: youtubeLibrary[currentYtIndex].id});
+                    else ytPlayer.playVideo();
+                }
+            }
+            updateUIPlayer();
+        }
+        
+        currentAudio.addEventListener('ended', () => { nextMusik(); });
+
+        let configKelas = {
+            'kls1': { maxR1: 20, maxR2: 10, maxR3: 5, color: 'bg-blue-500', name: 'KLS 1', valPembagi: 55 },
+            'kls2': { maxR1: 25, maxR2: 10, maxR3: 5, color: 'bg-emerald-500', name: 'KLS 2', valPembagi: 60 },
+            'kls3': { maxR1: 25, maxR2: 10, maxR3: 5, color: 'bg-teal-500', name: 'KLS 3', valPembagi: 60 },
+            'kls4': { maxR1: 30, maxR2: 10, maxR3: 5, color: 'bg-rose-500', name: 'KLS 4', valPembagi: 65 },
+            'kls5': { maxR1: 30, maxR2: 10, maxR3: 5, color: 'bg-fuchsia-500', name: 'KLS 5', valPembagi: 65 },
+            'kls6': { maxR1: 35, maxR2: 10, maxR3: 5, color: 'bg-purple-500', name: 'KLS 6', valPembagi: 70 },
+            'lain': { maxR1: 15, maxR2: 30, maxR3: 0, color: 'bg-cyan-500', name: 'LAIN', valPembagi: 45 }
+        };
+
+        // KODE DEWA: DATABASE SISWA FULL
+        const defaultSiswa = {
+            "1 ICP A": [{"presensi":1,"nama":"ALTHAF SHAQUILLE ABHIVANDYA"},{"presensi":2,"nama":"ANDARU GESIT YANARTA"},{"presensi":3,"nama":"Atarazka Syahnan Haziq"},{"presensi":4,"nama":"Balqis Akasha Shafiyah"},{"presensi":5,"nama":"BOY ATHALLAH BAKHRY"},{"presensi":6,"nama":"Elvara Aiza Santosa"},{"presensi":7,"nama":"Hamda Batrisya Seika"},{"presensi":8,"nama":"Inara Putri Arkadewi"},{"presensi":9,"nama":"LUKITA ASKANA SAKHI"},{"presensi":10,"nama":"Muhammad Tangguh Asnawi"},{"presensi":11,"nama":"Nizar Abdillah Ghazwan"},{"presensi":12,"nama":"PESONA HARUM HUMAIRA"},{"presensi":13,"nama":"RIFANI REYYA ANNISA"},{"presensi":14,"nama":"WAFAZENA JANITRALESHA"}],
+            "1 ICP B": [{"presensi":1,"nama":"CINTA AFIA SYAILENDRA"},{"presensi":2,"nama":"DAVIN AL CHALIEF ERABBANI"},{"presensi":3,"nama":"Diana Aiza Hudaya"},{"presensi":4,"nama":"Illona Nusaibah Azzahra"},{"presensi":5,"nama":"Jihan Arsylia Nugroho"},{"presensi":6,"nama":"KHALISTA ALIFIA GUNTORO"},{"presensi":7,"nama":"KHAWLA ADIBA DHATU"},{"presensi":8,"nama":"MALVEN RAFIIANDRA ARLY WIBOWO"},{"presensi":9,"nama":"MOZEIN ARKEVIN"},{"presensi":10,"nama":"Muhammad Zhafran Abdurrahman"},{"presensi":11,"nama":"Ocean Hoki Praditya"},{"presensi":12,"nama":"Zharif Almuqaffi Digit"},{"presensi":13,"nama":"Herdinar Siti Noorjehan Fidiyanto"}],
+            "1A": [{"presensi":1,"nama":"ABDULLAH AFKAR"},{"presensi":2,"nama":"ABIDZAR HASAN ALFARISI"},{"presensi":3,"nama":"Adreena Agil Maheswari"},{"presensi":4,"nama":"ADZKIYA PINKA FADHEELA"},{"presensi":5,"nama":"ALIF MAULANA ADHYASTHA"},{"presensi":6,"nama":"ATHARRAZKA SAPUTRA"},{"presensi":7,"nama":"AWFA RANIA AZZAHRA"},{"presensi":8,"nama":"DANIS ABRISAM"},{"presensi":9,"nama":"ELHASIQ KSATRIA IBAD EFENDI"},{"presensi":10,"nama":"FREYA SAILA WIDIYANTO"},{"presensi":11,"nama":"HAEDAR AL GHANY YAZEED"},{"presensi":12,"nama":"HAIDAR KIANO ALRAFAEYZA"},{"presensi":13,"nama":"HASNAH KHAIRUNNISA HUMAIROH"},{"presensi":14,"nama":"IBRAHIM AHMAD ABDUR ROUUF"},{"presensi":15,"nama":"KEINARRA AZKADINA WIJAYA"},{"presensi":16,"nama":"KHANSA PARAMITA WIBOWO"},{"presensi":17,"nama":"Khayra Mutiara Khalidiya"},{"presensi":18,"nama":"MAHANTA LEON ARRASYID"},{"presensi":19,"nama":"MUHAMMAD ABBIYA RAZKAJATI"},{"presensi":20,"nama":"Muhammad Idris Asy Syafii"},{"presensi":21,"nama":"NOURA KHANZANIA MECCA WIRAWAN"},{"presensi":22,"nama":"Nusaibah Aqila Choirunnisa"},{"presensi":23,"nama":"Omarizz Adrintaka Zayn"},{"presensi":24,"nama":"Rania Arsyi Nailazaara"},{"presensi":25,"nama":"RM Aldianurrasyid Rajendra Kusumo"},{"presensi":26,"nama":"Sakura Reiwa Gunawan"},{"presensi":27,"nama":"ZALENZIO MAULANA FACHRIANSYAH"},{"presensi":28,"nama":"KINARA TAQIYYA ADLA"}],
+            "1B": [{"presensi":1,"nama":"ADERA KIREINA HUTOMO"},{"presensi":2,"nama":"Aerish Qia Adzkadina"},{"presensi":3,"nama":"AISYAH NAYLA SALSABILA"},{"presensi":4,"nama":"ALESHA HANA ELSHANUM"},{"presensi":5,"nama":"ATHAFARIZ DANISH PRATAMA"},{"presensi":6,"nama":"AZKADINA FAKHRA FAOZI"},{"presensi":7,"nama":"BERYL SALSABELA"},{"presensi":8,"nama":"Ceisya Azzahra Hardian"},{"presensi":9,"nama":"DZIHANDRA RAFIF SANTOSA"},{"presensi":10,"nama":"FATHAN HAIDAR HAMIDI"},{"presensi":11,"nama":"Fawwaz Diaurahman Hiroshi Abqori"},{"presensi":12,"nama":"FAZIA NURAISHA BIANTARA"},{"presensi":13,"nama":"GHAFI ATHAZAKY DIRGANTORO"},{"presensi":14,"nama":"IBRAHIM ALFARIZI NUR ALDY"},{"presensi":15,"nama":"Ibrahim Arsa Wicaksono"},{"presensi":16,"nama":"Kenziano Tyaga Alfarizqi"},{"presensi":17,"nama":"KEYNARA ABRINA NADHIFA"},{"presensi":18,"nama":"MAHAJANA CARL PASSANDO"},{"presensi":19,"nama":"Muhammad Alfatih"},{"presensi":20,"nama":"MUHAMMAD AZKA RYUZAKI"},{"presensi":21,"nama":"MUHAMMAD RAFFI AL GHIFARI"},{"presensi":22,"nama":"Muhammad Rifky"},{"presensi":23,"nama":"Nazeera Anum Asy'Ari"},{"presensi":24,"nama":"Rafif Athafariz"},{"presensi":25,"nama":"Rania Zalfa Ramadhani"},{"presensi":26,"nama":"Riga Gilbyan"},{"presensi":27,"nama":"Shakeil El Barra Aditia"},{"presensi":28,"nama":"SHALOOM BETSY SANTOSO"}],
+            "1C": [{"presensi":1,"nama":"Abizar Zain Alby Devkhan"},{"presensi":2,"nama":"ALDRIC FAHREZA PURNOMO"},{"presensi":3,"nama":"ALESHA PUTRI KINANTI"},{"presensi":4,"nama":"AQMAR NADHIF AL AZIZ"},{"presensi":5,"nama":"AQUILA BRAMARA CHOIRUZZEIN"},{"presensi":6,"nama":"AYSILA NURA RASHNA"},{"presensi":7,"nama":"DAVIANDRA RADEVA ATHARRAZKA"},{"presensi":8,"nama":"FATIMAH HASNA ARIFAH"},{"presensi":9,"nama":"FILIO FARZANA ZHIODA"},{"presensi":10,"nama":"GIBRAN KHIAR WALIUDDIN"},{"presensi":11,"nama":"HANA SYARIF BAWAZIR"},{"presensi":12,"nama":"IBRAHIM AHMAD ABDUL FATTAAH"},{"presensi":13,"nama":"KARIN ALESHA AZZAHRA"},{"presensi":14,"nama":"MONERA ALIFIA ASRIKAN"},{"presensi":15,"nama":"MUHAMMAD ATTHAR ALHUSAIN"},{"presensi":16,"nama":"Muhammad Saka Maladira Alfahreza"},{"presensi":17,"nama":"Mutia Nur Afifah"},{"presensi":18,"nama":"NAYLA AZZAHRA SAVINA"},{"presensi":19,"nama":"Nazhan Azwar Algani"},{"presensi":20,"nama":"QANEITA KHAIRUN NISA"},{"presensi":21,"nama":"Rafa Alfarizi"},{"presensi":22,"nama":"Rasya Mochamad Athaya Bakti"},{"presensi":23,"nama":"Shabia Elmedina Farras"},{"presensi":24,"nama":"Yumna Latifah Ilmi Saputro"}],
+            "1D": [{"presensi":1,"nama":"AIZA SHANUM MAFAZA"},{"presensi":2,"nama":"AL IHYA ULUMUDDIN"},{"presensi":3,"nama":"ALEENA HANY SHAFIQAH"},{"presensi":4,"nama":"Alesha Qinara Sakhi"},{"presensi":5,"nama":"ALMAHYRA YUMNA KHALISA"},{"presensi":6,"nama":"ANAM KHAIRUL LUTHFI"},{"presensi":7,"nama":"ARKA ALI PRADANA"},{"presensi":8,"nama":"Chayra Putri Basyirah"},{"presensi":9,"nama":"Cirrillo Kyo Saputro Wiyono"},{"presensi":10,"nama":"FELISHA AZMA TSANIA"},{"presensi":11,"nama":"Ghazal Ilario Liban"},{"presensi":12,"nama":"HANA HAFIZA ANINDYA"},{"presensi":13,"nama":"Humaira Embun Putri Ardiansyah"},{"presensi":14,"nama":"Juang Ammar Al Syaddad"},{"presensi":15,"nama":"KALANDRA RAYYAN ALFARIZI"},{"presensi":16,"nama":"KAYYARA YASMENA AHMAD"},{"presensi":17,"nama":"KEANU ARSHAKA ZAFEER"},{"presensi":18,"nama":"KHADIJAH HAURA WIRDA"},{"presensi":19,"nama":"LAVENIA ARISHA MAHARANI SETIAWAN"},{"presensi":20,"nama":"MUHAMMAD ABIZAR AL FARIZI"},{"presensi":21,"nama":"Mushab Hafizan Abqary"},{"presensi":22,"nama":"RAFKA ABIMANYU NUKMAN"},{"presensi":23,"nama":"RAJENDRA VENENO ALFARIZKI"},{"presensi":24,"nama":"RASYAD ABDURRAHMAN SYAUKANI"},{"presensi":25,"nama":"Raysakha Janitra Saskara"},{"presensi":26,"nama":"SYAFIRA RAMADHANI"},{"presensi":27,"nama":"Tita Faranisa Birdella"},{"presensi":28,"nama":"YASMINA ISMAIL MARWAZI"}],
+            "2 ICP A": [{"presensi":1,"nama":"AFZAR HAZIQ MUSYAFFA"},{"presensi":2,"nama":"ALISHA SHAKAYLA FAYANI"},{"presensi":3,"nama":"ALNILAM ZEA FAIRUZA"},{"presensi":4,"nama":"ALTHAF VIRENDRA ARSALAN"},{"presensi":5,"nama":"Arshaka Gibran Daniswara"},{"presensi":6,"nama":"CORDELIA NADHIFA SAFANI"},{"presensi":7,"nama":"Davin Heksa Ardhana"},{"presensi":8,"nama":"ELZIO BARRA MAULANA"},{"presensi":9,"nama":"FAKHRI ASYRAF SHOFWAN MUSTAQIM"},{"presensi":10,"nama":"Gisella Zahira Joice"},{"presensi":11,"nama":"KANEZKA SAKHA ALVARENDRA"},{"presensi":12,"nama":"KHAIREEN ADIKARAPUTRI ALMAHYRA"},{"presensi":13,"nama":"KINARIAN SHAFA KIRANA"},{"presensi":14,"nama":"MIKHAYLA ANDREA AZZAHRA"},{"presensi":15,"nama":"MUTIARA SYAFIA JAZZYVANIA"},{"presensi":16,"nama":"RAMADHAN RAYYAN"},{"presensi":17,"nama":"REYHAN DZAKIANDRA WIDJAYA"},{"presensi":18,"nama":"RISANG EESHA KUMANDANG"},{"presensi":19,"nama":"Sheryl Anindya Elmarisa"},{"presensi":20,"nama":"SYAILENDRA SAMODRO JATI WASESO"}],
+            "2A": [{"presensi":1,"nama":"Abibah Maida Nahda Prasanda"},{"presensi":2,"nama":"Aksa D Rafael"},{"presensi":3,"nama":"Alea Briona Raqqema"},{"presensi":4,"nama":"ALESHA SYAFA CARRENISA"},{"presensi":5,"nama":"Alifa Adzkiya Putri Arifin"},{"presensi":6,"nama":"ALIYA MAHARANI ROOSSETYO"},{"presensi":7,"nama":"Althafunnizar Mauza Putra"},{"presensi":8,"nama":"Alvisco Ocean Wibowo"},{"presensi":9,"nama":"Andara Herfi Maulida"},{"presensi":10,"nama":"APRILLA SIHAN PUTRI ATMAJA"},{"presensi":11,"nama":"ARKANA PRATAMA DINIYAN"},{"presensi":12,"nama":"Ashalina Makayla Almahyra"},{"presensi":13,"nama":"Audrey Anggita Putri"},{"presensi":14,"nama":"Ayesha Inara Havika Sakti"},{"presensi":15,"nama":"AZRIL MAUZA ADHITAMA"},{"presensi":16,"nama":"AZZAM AL ARKHAN"},{"presensi":17,"nama":"BELVIA JEEHANDYA JAYA"},{"presensi":18,"nama":"DEARSYILA VINCA VIOLETTA"},{"presensi":19,"nama":"DHANESH RASHAAD ARTANABIL"},{"presensi":20,"nama":"Enver Dhafin Shakeel"},{"presensi":21,"nama":"FALAH FERDIANSYAH"},{"presensi":22,"nama":"Faqih Ariendra Keenan Alfarezel"},{"presensi":23,"nama":"Fatur Al-Ghifari Mekka Rahardjo"},{"presensi":24,"nama":"HAMIZAN AZFAR"},{"presensi":25,"nama":"HUMAIRA AZKA HERYUDI"},{"presensi":26,"nama":"SAPHENA ANNASYA SOFYAN"}],
+            "2B": [{"presensi":1,"nama":"ADIVA SHAQUEENA AZZAHRA"},{"presensi":2,"nama":"ANNASTASYA ELENA QAMRA"},{"presensi":3,"nama":"Aqila Putri ashalina"},{"presensi":4,"nama":"ARSENIO BERRYL ABQARI"},{"presensi":5,"nama":"ARSYAD ABDURAHMAN"},{"presensi":6,"nama":"Arsyfa Syabella Humaira"},{"presensi":7,"nama":"ATHAFARIZ ALVARENDRA OSTIN"},{"presensi":8,"nama":"Ayyash Tsaqif Alfatih"},{"presensi":9,"nama":"Dalane Jo D'angel"},{"presensi":10,"nama":"El Wafa Bintang Nawwarulhuda"},{"presensi":11,"nama":"GEORGIA SYANUM GIYANTO PRASODJO"},{"presensi":12,"nama":"Gibran Evano Pramudita"},{"presensi":13,"nama":"ILYAS FATAHILLAH ZAIN"},{"presensi":14,"nama":"Inara Oktaviani Putri Kusuma"},{"presensi":15,"nama":"ISTIB SYARUNANJALA"},{"presensi":16,"nama":"KAHISHA ARTA SAFFIYA"},{"presensi":17,"nama":"Kyna Asyakina Zahira Badegesy"},{"presensi":18,"nama":"Lionel Alvaro Zanetti"},{"presensi":19,"nama":"Muhammad Althof Zahirul Haq"},{"presensi":20,"nama":"NAFIRZHA RIZKYLLAH FATHONY"},{"presensi":21,"nama":"NATASYA ALMIRA"},{"presensi":22,"nama":"RAFANIA AZZAHRA"},{"presensi":23,"nama":"Rafif Akhmar Santoso"},{"presensi":24,"nama":"SANG ALAMRAZD HAQ"},{"presensi":25,"nama":"SHAZFA HANANIA AZAHRA"},{"presensi":26,"nama":"TANAYA REKHA OPALINA"},{"presensi":27,"nama":"ZIANNISA FAHMIDA AFRA"}],
+            "2C": [{"presensi":1,"nama":"Abidzar Emyr Amrullah"},{"presensi":2,"nama":"Abrisam Ahmad Abdillah"},{"presensi":3,"nama":"ADLAN AHZA MAKARIM"},{"presensi":4,"nama":"AFIZA GHANIA EFENDI"},{"presensi":5,"nama":"AHMAD ARSYA SYAWALUL ARIF"},{"presensi":6,"nama":"Aisyah Nuha Zahira"},{"presensi":7,"nama":"Alesha Azkadina Putri Alfariz"},{"presensi":8,"nama":"Alessandro Alano Aprillio"},{"presensi":9,"nama":"Arindi Putri Nurdiyanwibowo"},{"presensi":10,"nama":"HAFIDZ EL HAZIQ SAPUTRA"},{"presensi":11,"nama":"Khairunnisa Salsabila"},{"presensi":12,"nama":"Mahreen Adna Almahyra"},{"presensi":13,"nama":"MIKHAYLA FITRIYADI"},{"presensi":14,"nama":"Muhammad Alfatan Ardana"},{"presensi":15,"nama":"MUHAMMAD ARSYA GHIFARI"},{"presensi":16,"nama":"Muhammad Daffa Abyan Pamungkas"},{"presensi":17,"nama":"MUHAMMAD DZAKI AKBAR"},{"presensi":18,"nama":"Muhammad Nizam Alfatih"},{"presensi":19,"nama":"NADIA WISMA PURWOKO"},{"presensi":20,"nama":"NASYIFA AZALIA PUTRI BERNOWO"},{"presensi":21,"nama":"QUINNE ZAHIRA ANINDRA"},{"presensi":22,"nama":"Raffasya Ahmad Luthfi"},{"presensi":23,"nama":"SABEEYA SYAHRASYID RAYYANADA"},{"presensi":24,"nama":"MALIQ ZHIAN HARES"}],
+            "2D": [{"presensi":1,"nama":"AISYAH IZZATUNNISA PUTRI NUGROHO"},{"presensi":2,"nama":"ARSHAKA RAMAZHAN ALGIFARI MANTOW"},{"presensi":3,"nama":"CARLO ZEESHAN RUMI KURNIAWAN"},{"presensi":4,"nama":"Fatih Akhtar Raiffaza"},{"presensi":5,"nama":"FAUZAN AYDIN ZULKIFLI"},{"presensi":6,"nama":"HANIFA AQILA BAHEERA"},{"presensi":7,"nama":"Kamila Noveara Athifa"},{"presensi":8,"nama":"Kenes Pratista Vinala Putri"},{"presensi":9,"nama":"KHANZA ADELIA PUTRI WIJAYA"},{"presensi":10,"nama":"MUHAMMAD UBAY PRASETYO"},{"presensi":11,"nama":"MUHAMMAD ADHYAKSA BISMA"},{"presensi":12,"nama":"MUHAMMAD FARIZ SETYAWAN"},{"presensi":13,"nama":"MUHAMMAD RAFFAN ALFARIZQI FATAHILLAH"},{"presensi":14,"nama":"MUHAMMAD RAFFI RAFASYA NUGROHO"},{"presensi":15,"nama":"Nathan Haven Akmal Alfaruq"},{"presensi":16,"nama":"Quinsha Qiana Zakeysha"},{"presensi":17,"nama":"RAFA FEBIAN ALFARIZKY"},{"presensi":18,"nama":"RAFISQY YUSUF ALFARIZA"},{"presensi":19,"nama":"RHEA ALZEA NUGROHO"},{"presensi":20,"nama":"Rifaul Zhafran Ghazani"},{"presensi":21,"nama":"Riffat Ahmad Luthfi"},{"presensi":22,"nama":"Rumaisha Pragya Raharja"},{"presensi":23,"nama":"SADDAM MUHAMMAD AFKARI"},{"presensi":24,"nama":"SAILA AYUDIA PUTRI"},{"presensi":25,"nama":"VENUS ALMAHYRA HARIYANTO"},{"presensi":26,"nama":"ABIYYU DHABITH AL HAMIZ"}],
+            "3A": [{"presensi":1,"nama":"Abdillah Ali Arzan"},{"presensi":2,"nama":"Abid Luqman Rajendra"},{"presensi":3,"nama":"ADIVA SHAFINA PUTRI"},{"presensi":4,"nama":"Adzkiya Nurrizqi Rakhmawati"},{"presensi":5,"nama":"Afsheena Hananezka Ar Razzan"},{"presensi":6,"nama":"Aisyah Ayudia Inara"},{"presensi":7,"nama":"Akifa Naila Asy'ari"},{"presensi":8,"nama":"Alfath Ataya Abqary Arzam"},{"presensi":9,"nama":"ARSYILA KIKANDRYA SUSANTO"},{"presensi":10,"nama":"Arsyillah Nur Sofiani"},{"presensi":11,"nama":"Aruna Sachi Philia"},{"presensi":12,"nama":"Ashadiyara Haflasea"},{"presensi":13,"nama":"Athifa Mahira Khansa"},{"presensi":14,"nama":"AZZAHRA ALNAIRA"},{"presensi":15,"nama":"DINATA ALLEN DHYO AL LATIF"},{"presensi":16,"nama":"FAEYZA SYATHIR KURNIAWAN"},{"presensi":17,"nama":"Fakhri Luthfi Hardianto"},{"presensi":18,"nama":"Garland Mashka Rafeyfa"},{"presensi":19,"nama":"Juang Haidar Athalla"},{"presensi":20,"nama":"Kalazahy Nadwa Zayn"},{"presensi":21,"nama":"MUHAMMAD HANIF RINGGAN ALFARIZ BASUKI"},{"presensi":22,"nama":"MUHAMMAD RAFKA VIRENDRA"},{"presensi":23,"nama":"Nadhira Khaerani Hariyadi"},{"presensi":24,"nama":"Nayyara Aqila Razanah"},{"presensi":25,"nama":"Omar Abdul Aziz"},{"presensi":26,"nama":"Raditya Pradipta Ardhani"},{"presensi":27,"nama":"Rashya Alrafaeyza Hajam"},{"presensi":28,"nama":"Shafira Noreen Choirunnisa"},{"presensi":29,"nama":"SHAZFA LASIRA GUNARSO"},{"presensi":30,"nama":"Syakira Tsaqif Choirunnisa"}],
+            "3B": [{"presensi":1,"nama":"Abiy Vishaka Budi Nugroho"},{"presensi":2,"nama":"Adeeva Meidina Assyifatama"},{"presensi":3,"nama":"Adzkiya Naila Arsyila Atmadja"},{"presensi":4,"nama":"Aello Mezaluna Arubby"},{"presensi":5,"nama":"AERILYN VLA ADZKADINA"},{"presensi":6,"nama":"AHMAD ALFARIZQI SHAQUILLE PUTRA"},{"presensi":7,"nama":"AHNAF KHALIFAZIL AFRIANSAH"},{"presensi":8,"nama":"Aldena Dwisitta Wildani"},{"presensi":9,"nama":"Altaz Qianno Al Barra"},{"presensi":10,"nama":"Candrika Althafunnisa"},{"presensi":11,"nama":"FADLI ABQARY ALHUSNA"},{"presensi":12,"nama":"Fahreza Fathan Abdillah"},{"presensi":13,"nama":"Gavin Yoga Alvaro"},{"presensi":14,"nama":"Ghaida Azkayra Khairani"},{"presensi":15,"nama":"HAFIZH KHWARIZMI AL HANI"},{"presensi":16,"nama":"Jihan Aisharani Zea Zayyana"},{"presensi":17,"nama":"KEENAN KANAKA ALLI ZAFLAN"},{"presensi":18,"nama":"Khansa Monaya Rumaysha"},{"presensi":19,"nama":"Khanza Athifa Ningrum"},{"presensi":20,"nama":"KHAYLILA QUEENA AHMAD"},{"presensi":21,"nama":"KIRANA SHAQILA RAMADHANI"},{"presensi":22,"nama":"Mikhayla Kinanti Azkadina"},{"presensi":23,"nama":"Muhammad Al Ahsan Iqbal Setyo"},{"presensi":24,"nama":"Narulita Beryl Ramadhani"},{"presensi":25,"nama":"Nashila Zia Fahranie"},{"presensi":26,"nama":"RAIHAN ADITYA PRAWIRA"},{"presensi":27,"nama":"REYHAN ATHARIZ WIRAWAN"},{"presensi":28,"nama":"Romaisha Celina Okvin"},{"presensi":29,"nama":"Sarah Ali Hudzaifi"},{"presensi":30,"nama":"SYAMIL YAHYA AL HAFIDZI"}],
+            "3C": [{"presensi":1,"nama":"Abizar Fatih Pratama"},{"presensi":2,"nama":"ADEEVA AULIASYIFA"},{"presensi":3,"nama":"AISYAY AYUDIA INARA"},{"presensi":4,"nama":"AISYAH NAMEERA FATHIYYATURAHMA"},{"presensi":5,"nama":"AL-GHAZALI AISY ARFA DEANDRA"},{"presensi":6,"nama":"Alisha Natania Khumaira Dachlan"},{"presensi":7,"nama":"ALMEERA SHABIRA EKATARA"},{"presensi":8,"nama":"Almira Shanum Medina Sungkan"},{"presensi":9,"nama":"Aqila Salma Kamila"},{"presensi":10,"nama":"ARJUNA SYAILENDRA AL KHALIFI"},{"presensi":11,"nama":"Arka Leander Raffasya"},{"presensi":12,"nama":"ARSHAKA BINTANG ARLINGGA JATI"},{"presensi":13,"nama":"ARSYA AQUILA MUSYAFFA"},{"presensi":14,"nama":"Azhar Zalfa Faradisa"},{"presensi":15,"nama":"BARRAHILAL AMAHU MANGGANA"},{"presensi":16,"nama":"Callista Nabila Utomo"},{"presensi":17,"nama":"Fathir Alvissyahbana Mudjaed"},{"presensi":18,"nama":"FEARGAL V MARSA"},{"presensi":19,"nama":"KANZIA NAIRA AQILA"},{"presensi":20,"nama":"KHAIRINA FATIMA AL ADHA"},{"presensi":21,"nama":"Khayra Zakiyya Ferris"},{"presensi":22,"nama":"Kimora Humaira Azzahra"},{"presensi":23,"nama":"Laksita Shanumpadma Elhadi"},{"presensi":24,"nama":"MUHAMMAD ELRAJA HABIBIE SANTOSO"},{"presensi":25,"nama":"Muhammad Saifan Asykar Alfansyah"},{"presensi":26,"nama":"Rumaisha Nuha Muhammad"},{"presensi":27,"nama":"Shaula Alya Setiawan"},{"presensi":28,"nama":"Sybilla Jelita Aditia"},{"presensi":29,"nama":"Zavier Elfa'az Zayn Hariyono"},{"presensi":30,"nama":"Zulfadhli Fayyad Hidayat"}],
+            "3D": [{"presensi":1,"nama":"Afiza Azkayra Setyawan"},{"presensi":2,"nama":"Ahnaf Hashif Wibowo"},{"presensi":3,"nama":"Aisyah Ayunda Hamidi"},{"presensi":4,"nama":"AQILLA MUFIA LASHIRA RIVAI"},{"presensi":5,"nama":"Arshaka Radinka Shakeel"},{"presensi":6,"nama":"ARSY FISYAH KHUSNUL"},{"presensi":7,"nama":"Arsyila Ashadiya Adzra Faozi"},{"presensi":8,"nama":"Deisya Azzahra Pradana"},{"presensi":9,"nama":"Deva Aquina Sakhi"},{"presensi":10,"nama":"GINDA ARSYIL VINALES"},{"presensi":11,"nama":"HASNA NUR HUWA YIDA"},{"presensi":12,"nama":"Iqbal Bintang Pramudya"},{"presensi":13,"nama":"KEANU DANISH KURNIAWAN"},{"presensi":14,"nama":"KEN ARUNA GENDHIS NARESWARI"},{"presensi":15,"nama":"Khaila Putri Pradipta"},{"presensi":16,"nama":"KHALISA SABRIA RANAA SUGIARTA"},{"presensi":17,"nama":"LASHIRA IZZATI SHANUM ZULKARNAIN"},{"presensi":18,"nama":"LETYCIA YUPI QURRATU'AIN BUDIARSO"},{"presensi":19,"nama":"Muhammad Gibran Al Fath Widhiananto"},{"presensi":20,"nama":"NAFISA AQILA PUTRI"},{"presensi":21,"nama":"Nafla Aina Rohman"},{"presensi":22,"nama":"RAKA ADHYASTHA PARADILLA"},{"presensi":23,"nama":"Respati Zayyan Abid"},{"presensi":24,"nama":"SYAFIQ ABQORY"},{"presensi":25,"nama":"Syahira Naura Herlambang"},{"presensi":26,"nama":"VAREL ATHAFARIZ ZHAFRAN SAPUTRA"},{"presensi":27,"nama":"Zayn Khalifa Riswardana"},{"presensi":28,"nama":"Zeevana Shaqeen Azzahra Santoso"},{"presensi":29,"nama":"ZIDAN ATHALLA DHIAULHAQ"},{"presensi":30,"nama":"Zidan Faiz Ramadhan"}],
+            "4A": [{"presensi":1,"nama":"Aisha Ziya Shayfa"},{"presensi":2,"nama":"Al Syarawi Arfa Gunawan"},{"presensi":3,"nama":"Annisa Salsabila Zafarani"},{"presensi":4,"nama":"AQILA BELLATRIX HUMAIRAH"},{"presensi":5,"nama":"Assyifa Ar Razi"},{"presensi":6,"nama":"Athariz Calief Arganta"},{"presensi":7,"nama":"AZKA RAQILA AL GHIFARI"},{"presensi":8,"nama":"BINTANG PRADHIPTA HERMAWAN"},{"presensi":9,"nama":"BYANCA CHIARA SYAFIQA"},{"presensi":10,"nama":"DISTYA RACHYANANENDRA ALMAHYRA"},{"presensi":11,"nama":"FAAIZ TSAANI KAMILAN EL CHOIRI"},{"presensi":12,"nama":"Farrel Arkaan Oktora"},{"presensi":13,"nama":"HANINDYA JATI PRAMUDITA"},{"presensi":14,"nama":"Hans Aulia Khawari"},{"presensi":15,"nama":"Keisha Amandla Shareefa Iskandar"},{"presensi":16,"nama":"KEYSHA AZZAHRA ZAHFIRA"},{"presensi":17,"nama":"Khanza Naila Santosa"},{"presensi":18,"nama":"MUHAMMAD ALTEZZA ZABDAN"},{"presensi":19,"nama":"Muhammad Althof Attarizq Wishaka"},{"presensi":20,"nama":"Muhammad Irsyad At Tamimi"},{"presensi":21,"nama":"MUHAMMAD REVAN PRADITYA"},{"presensi":22,"nama":"Muhammad Yusuf Ramadhan Ar-Rasyid"},{"presensi":23,"nama":"NADIA APRILIA SYAKILA"},{"presensi":24,"nama":"NAUFAL ABQARI ARADHANA"},{"presensi":25,"nama":"Nayaka Fajar Sriyanto"},{"presensi":26,"nama":"PARADUTA ISNAN SUSILO"},{"presensi":27,"nama":"RAISYA RIZKY RAFIFAH PUTRI"},{"presensi":28,"nama":"Rumaysha Numa Reis"},{"presensi":29,"nama":"Sadryan Bima Ar Rizky"},{"presensi":30,"nama":"Syanala Kania Salsabila"}],
+            "4B": [{"presensi":1,"nama":"ADIRA AZZAHRA PUTRI"},{"presensi":2,"nama":"AISYAH ZEA ALMAHYRA"},{"presensi":3,"nama":"Aleesha Afsheen Amarudin"},{"presensi":4,"nama":"ALZAIDAN KHALIQ PERMANA"},{"presensi":5,"nama":"Annaas Rokah Athallah"},{"presensi":6,"nama":"Citrahayi Abbidah Embun Kirana"},{"presensi":7,"nama":"DAFFA CAESAR EFENDI"},{"presensi":8,"nama":"Danendra Azzam Pambudi"},{"presensi":9,"nama":"Delisha Silmi Afiqa"},{"presensi":10,"nama":"Dhia Sabrina Azzalea"},{"presensi":11,"nama":"Fahreza Khalifa Rizky Harun"},{"presensi":12,"nama":"FATIH ALI TSAQIF"},{"presensi":13,"nama":"Hafiza Asyifa Risdana"},{"presensi":14,"nama":"Hafizh Athar Suprapto"},{"presensi":15,"nama":"HAFSA NADHIRA HISAN"},{"presensi":16,"nama":"Irsyad Thohir Putra Irawan"},{"presensi":17,"nama":"KANUGRAHAN ADI WICAKSONO"},{"presensi":18,"nama":"Keanu Putra Hariyadi"},{"presensi":19,"nama":"KEJORA LANGGENG BILITANIA"},{"presensi":20,"nama":"Lucky Arvin Qaid"},{"presensi":21,"nama":"Mikayla Putri Prasetyo"},{"presensi":22,"nama":"Muhamad Adien Taufik"},{"presensi":23,"nama":"NAIRA SYABILA AZZAHRA PUTRI"},{"presensi":24,"nama":"Prince Muhammadiyah El Azzami Sukoco"},{"presensi":25,"nama":"RAJENDRA FADHIL ALFAYI PRAMONO"},{"presensi":26,"nama":"SHEZAN INARA NAJMA"},{"presensi":27,"nama":"Tristan Adelio Setiawan"},{"presensi":28,"nama":"WERKUDARA VINCENT SANTOSO"},{"presensi":29,"nama":"ZAHSY QUEENSHA ELNAURA"}],
+            "4C": [{"presensi":1,"nama":"Airlangga Gibran Maulana"},{"presensi":2,"nama":"AISYAH DINDA RAMANIA"},{"presensi":3,"nama":"Aisyah Putri Ayudia"},{"presensi":4,"nama":"ARIFIN ARKANA RAMADHAN"},{"presensi":5,"nama":"Arya Fahreza Kurniawan"},{"presensi":6,"nama":"Ayyash Jaisha Mohammad"},{"presensi":7,"nama":"Davira Alesha Pradana"},{"presensi":8,"nama":"FAHLAVI ROMI DEVANKA"},{"presensi":9,"nama":"Farah Nabila Azzahra"},{"presensi":10,"nama":"Fellicia Adeeva Cahya Lacita"},{"presensi":11,"nama":"Gendis Alitha Silmi"},{"presensi":12,"nama":"GHAISAN DZAKY ARIFBOWO"},{"presensi":13,"nama":"HAFIZH MAHARDIKA"},{"presensi":14,"nama":"Henisa Azzahra Silvia"},{"presensi":15,"nama":"INARA AYUNINDYA"},{"presensi":16,"nama":"JESSICA JASMINE"},{"presensi":17,"nama":"KENZI APRILLIO ALFARISQI"},{"presensi":18,"nama":"Kevin Arfandio"},{"presensi":19,"nama":"Kimi Shakila Ajunta"},{"presensi":20,"nama":"MARSYA ALEA ZANINDYA"},{"presensi":21,"nama":"Mirza Zaim Arrafif"},{"presensi":22,"nama":"Muhammad Arfan Arrazan"},{"presensi":23,"nama":"Muhammad Arkan"},{"presensi":24,"nama":"Musyaffa Dzakyandra Raffa Setiyawan"},{"presensi":25,"nama":"Nabila Zahwa Humaira"},{"presensi":26,"nama":"NAUFAL FADHIL RAMADHAN"},{"presensi":27,"nama":"NAURA KINANDRA SUJADI"},{"presensi":28,"nama":"QUEEN RAVENA AISYAH TOBING"},{"presensi":29,"nama":"Radhika Zefa Utomo"},{"presensi":30,"nama":"RAFIF ADYTAMA MULYA"},{"presensi":31,"nama":"Rifqi Hamidan"},{"presensi":32,"nama":"SHIDQIA FATIHAH AL ZENA KURNIAWAN"}],
+            "4D": [{"presensi":1,"nama":"Adeeva Afsheen Abdillah"},{"presensi":2,"nama":"ALILA KAIA MAULANA"},{"presensi":3,"nama":"Alkhalifi Arkan Sakha Fatardo"},{"presensi":4,"nama":"Alva Rizky Andrianto"},{"presensi":5,"nama":"Anindya shakila putri"},{"presensi":6,"nama":"Anugrah Daviandra Calisto Alfarez"},{"presensi":7,"nama":"ARIF FAITH RAHMAN"},{"presensi":8,"nama":"ARSAKHA TIMUR PAMUNGKAS"},{"presensi":9,"nama":"Azzahra aulia angelina nugraha"},{"presensi":10,"nama":"BASTIAN DANISH RAYYAN RABBANI"},{"presensi":11,"nama":"Herjuno Ahmad Fidiyanto"},{"presensi":12,"nama":"Kaelare Gandewa Murdani"},{"presensi":13,"nama":"Kaysa Elkhaira Shanum"},{"presensi":14,"nama":"KHAYLA AZZA BATRISYA ZAHRA"},{"presensi":15,"nama":"MIKAILA LAQUITTA HENZIE PRASODJO"},{"presensi":16,"nama":"Mirza Ahnaf Putra Winaris"},{"presensi":17,"nama":"MUHAMMAD ADIPATI BAGASKARA"},{"presensi":18,"nama":"MUHAMMAD KHARENDIO DARIS NIBRAS"},{"presensi":19,"nama":"NAILA ALESHA SAFIRA"},{"presensi":20,"nama":"Nandana Adzaki Naswan"},{"presensi":21,"nama":"Oryza Ziggy El Fatta Rosadi"},{"presensi":22,"nama":"Rania Saffa Hafisyah"},{"presensi":23,"nama":"Ravendra Elano Al Kahfi"},{"presensi":24,"nama":"SYAFIYA SALMA KIRANIA CAHYANTO"},{"presensi":25,"nama":"Thalita Maiza Eltsania"},{"presensi":26,"nama":"Tsaniyah Adhifa Nugroho"},{"presensi":27,"nama":"YASNA ISMAIL MARWAZI"},{"presensi":28,"nama":"Yuna Luserina Sanjaya"},{"presensi":29,"nama":"Yusuf Arsyad Abdulloh"},{"presensi":30,"nama":"ZAHIDA RISTYA MAHESWARI"}],
+            "5A": [{"presensi":1,"nama":"Adnan Faeyza Al Farrukh"},{"presensi":2,"nama":"Alexi Permana Pribadi"},{"presensi":3,"nama":"Alfaraziq Hafy Ar-Razzan"},{"presensi":4,"nama":"Alnadeem Akbar Ramadhan"},{"presensi":5,"nama":"Apta Janitra Passando"},{"presensi":6,"nama":"Aqilasha Porsche Queenarinda"},{"presensi":7,"nama":"Athaliana Alfarisa Wibowo"},{"presensi":8,"nama":"Aulia Syamil Almumtaza"},{"presensi":9,"nama":"Ayudia Inara Alesha Putri"},{"presensi":10,"nama":"Azzahra Humaira Fadhillah"},{"presensi":11,"nama":"Carissa Annisa Faiha"},{"presensi":12,"nama":"Chelsea Oktavia Putri"},{"presensi":13,"nama":"Davina Shava Khairiya Putri"},{"presensi":14,"nama":"Dhabith Aqilah Munsif"},{"presensi":15,"nama":"Fiorent Al Hafizzh Arjuna Dyan Putra"},{"presensi":16,"nama":"Firhan dilfanajib"},{"presensi":17,"nama":"Freya Ariana Callista Mohammad"},{"presensi":18,"nama":"Gio Fadhil Satria Praditya"},{"presensi":19,"nama":"Habil Athaya Zaahirulhaq"},{"presensi":20,"nama":"Hadaya Sakinah Fajar Yin Yang"},{"presensi":21,"nama":"Ikmal Zufar"},{"presensi":22,"nama":"Krystal Adeeva Diandra Faradilla"},{"presensi":23,"nama":"Melvin Rahmatullah Nizar"},{"presensi":24,"nama":"Muhammad Adrian Banu Atiro"},{"presensi":25,"nama":"Muhammad Ashraf Ardiansyah"},{"presensi":26,"nama":"Nada Arsyifa Fredelina"},{"presensi":27,"nama":"Naila Ulfa Caesarra"},{"presensi":28,"nama":"Radja Anatan Wijaya"},{"presensi":29,"nama":"Ramadhan Sandya Wahyu Jati"}],
+            "5B": [{"presensi":1,"nama":"Abidah Husna Humaniora"},{"presensi":2,"nama":"Abiyyu Radyta Fawwas"},{"presensi":3,"nama":"Adsila Nur Aisyah"},{"presensi":4,"nama":"Airin Palomarinka"},{"presensi":5,"nama":"Alifa Nabilah Putri Kusumawati"},{"presensi":6,"nama":"Anagata Premieranda"},{"presensi":7,"nama":"Azbin Hisyam Linoko"},{"presensi":8,"nama":"Basmalah Faisal Al Ghozali"},{"presensi":9,"nama":"Callysta Annisa Faiha"},{"presensi":10,"nama":"Daud Abdul Majiid"},{"presensi":11,"nama":"Dyah Pratista Nareswari"},{"presensi":12,"nama":"Edgar zaidan aditya"},{"presensi":13,"nama":"Fadlan Athar Sugiarta"},{"presensi":14,"nama":"Fathiya Fella Ramadyana"},{"presensi":15,"nama":"Hafiza Khaira Lubna"},{"presensi":16,"nama":"Hanum Maryam Istafa"},{"presensi":17,"nama":"Iqbal Sakha Abiyyu"},{"presensi":18,"nama":"Kaynarra Shanum Aufanisa"},{"presensi":19,"nama":"Kayyisa Maza Adisti"},{"presensi":20,"nama":"Khaizuran Raziq Abbasy"},{"presensi":21,"nama":"Khalid Satya Abdillah"},{"presensi":22,"nama":"Muhammad Dzikron Almusawa"},{"presensi":23,"nama":"Naufal Ahza Fahryan"},{"presensi":24,"nama":"Nayla Adiva Putri Arga"},{"presensi":25,"nama":"Rislaila Karamina Nareswari"},{"presensi":26,"nama":"Sabina Nindya El Yasin"},{"presensi":27,"nama":"Shafira Alhusna Denastya"},{"presensi":28,"nama":"Zaki Al Fariz"},{"presensi":29,"nama":"Ze Abdul Ghany Fahradienn"}],
+            "5C": [{"presensi":1,"nama":"Abdillah Muhafizh"},{"presensi":2,"nama":"Ahmad Dzakir El Basil Nelson"},{"presensi":3,"nama":"Aisha Salsabil Darmawan"},{"presensi":4,"nama":"Alif Aqmal Abqori"},{"presensi":5,"nama":"Ariendra Salsabila Ostin"},{"presensi":6,"nama":"Belva Caliana Aqila"},{"presensi":7,"nama":"Diandra Alrafaeyza Wibowo"},{"presensi":8,"nama":"Fadlin Athmar Sugiarta"},{"presensi":9,"nama":"Fariq Akhdan Azkiya"},{"presensi":10,"nama":"Fayyadh Ubaidillah Narendra"},{"presensi":11,"nama":"Fazila Ariinda Lutfunisa"},{"presensi":12,"nama":"Humayra lutifa Azizah nur chovie"},{"presensi":13,"nama":"Irhad Ghani Ismail"},{"presensi":14,"nama":"Jordan Aurio Wibowo"},{"presensi":15,"nama":"Keisya Faiha Rifda Putri"},{"presensi":16,"nama":"Maritza Farzana Aaliyah"},{"presensi":17,"nama":"Mohammad Banu Rezon"},{"presensi":18,"nama":"Muhammad Almer Zafrano"},{"presensi":19,"nama":"Muhammad Ayyasy Al Fatih"},{"presensi":20,"nama":"Muhammad Sabrang Piwulang Kautaman"},{"presensi":21,"nama":"Muhammad Yusuf Hanafi"},{"presensi":22,"nama":"Raffael Alfarizqi Novalino"},{"presensi":23,"nama":"Rara Ayu Mefita Putri Az Zahra"},{"presensi":24,"nama":"Rheva Almira Agatha"},{"presensi":25,"nama":"Royyan Adikaraputra Syahbana"},{"presensi":26,"nama":"Sabrina Aisyifa Haifa"},{"presensi":27,"nama":"Safa Nadira Saraswati"},{"presensi":28,"nama":"Sheikha Mahra Al Khawarizmi Muzakarisa"},{"presensi":29,"nama":"Sybilla Embun Dinar"},{"presensi":30,"nama":"Tsania Zeina Khumaira"}],
+            "5D": [{"presensi":1,"nama":"Abidzar Athaya Dzaky Algifary"},{"presensi":2,"nama":"AINA MACHYA ALSHIDDIQ"},{"presensi":3,"nama":"Aisyah Dianov El Ghania"},{"presensi":4,"nama":"Almira Syakib Rizqiya"},{"presensi":5,"nama":"Alvaro Mahadana"},{"presensi":6,"nama":"Arka Kelud Nova Widyanto"},{"presensi":7,"nama":"Arsyil Hakim Al Fatih"},{"presensi":8,"nama":"Calista Revani"},{"presensi":9,"nama":"Dafa Arsya Wiyanda"},{"presensi":10,"nama":"Fatimah Nurfaeyza Biantara"},{"presensi":11,"nama":"Ghaziya Aqila Sutopo"},{"presensi":12,"nama":"Ghouzan Zweikho Alghifari"},{"presensi":13,"nama":"Hamizan Arfa Basyar"},{"presensi":14,"nama":"Ibrahim Koji Kayana"},{"presensi":15,"nama":"Javier Isco Setya Kurniawan"},{"presensi":16,"nama":"Kannaya Tungga Dewi Rahardjo"},{"presensi":17,"nama":"Keanu Putra Rafandra"},{"presensi":18,"nama":"Marsya Anindya Pradipta"},{"presensi":19,"nama":"Muhammad Zain Alkaf"},{"presensi":20,"nama":"Nafisah Azzahra"},{"presensi":21,"nama":"Naura Hasna Khumaira Alsaka"},{"presensi":22,"nama":"Oktavia Jetri Kurnianada"},{"presensi":23,"nama":"Qonita Humairo Latif"},{"presensi":24,"nama":"Rafif dzaky ismail"},{"presensi":25,"nama":"Raka Raditya Rasyid"},{"presensi":26,"nama":"Reinhart Izzul Haq Muhammad"},{"presensi":27,"nama":"RM Asyrafurahman Wiryawan Kusumo"},{"presensi":28,"nama":"Shelby Azzahra Dzakira"},{"presensi":29,"nama":"Syafira Khanza Fakhrudin"},{"presensi":30,"nama":"Zhafir Mahendra Putra"}],
+            "6A": [{"presensi":1,"nama":"Abdullah Naafi' Haitami"},{"presensi":2,"nama":"Adinda Kharisma Putri Kencono"},{"presensi":3,"nama":"Ahmad Fadillah Ramdhani"},{"presensi":4,"nama":"Almira Savaira Ayla Arwina Putri"},{"presensi":5,"nama":"Ashilla Nafisha Salsabila"},{"presensi":6,"nama":"Azzah Fatin Dinah"},{"presensi":7,"nama":"Bintang Pramudita Dewani"},{"presensi":8,"nama":"Clevara Ziven Arsy Erlandy"},{"presensi":9,"nama":"Elina Farah Aulia"},{"presensi":10,"nama":"Gadis Avisa Amalia"},{"presensi":11,"nama":"Haisha Hanum Hanania"},{"presensi":12,"nama":"Hanifan Faishal Akbar"},{"presensi":13,"nama":"Keanu Aufaa Putra Kuncara"},{"presensi":14,"nama":"Khalifa Alya Khairunnisa"},{"presensi":15,"nama":"Lanika Alleia Nugroho"},{"presensi":16,"nama":"Maekha Tria Al Ghazali"},{"presensi":17,"nama":"Maheswara Sutodigdoyo Purbo Wiseso"},{"presensi":18,"nama":"Mikhayla Zafirazka Sunu"},{"presensi":19,"nama":"Muhammad Atha Rasyafa"},{"presensi":20,"nama":"Nadya Asyifa Khairani"},{"presensi":21,"nama":"Najwa Mufida Adaffi"},{"presensi":22,"nama":"Narendra Faid Algibran"},{"presensi":23,"nama":"Nediva Faranisa Arifa Putri"},{"presensi":24,"nama":"Noni Lexa Amaretha Setyawan"},{"presensi":25,"nama":"Pradipta Rasya Alfarizky"},{"presensi":26,"nama":"Sakura Hana Humaira"},{"presensi":27,"nama":"Zavier Fico El Rafif"}],
+            "6B": [{"presensi":1,"nama":"Abdurrahman Aziz Khairi"},{"presensi":2,"nama":"Abdurrahman Yudha Iskandarsyah"},{"presensi":3,"nama":"Allyssa Assyifatul Zahra"},{"presensi":4,"nama":"Alvaro Aidan Santosa"},{"presensi":5,"nama":"Andrina Larasati Roossetyo"},{"presensi":6,"nama":"Annisa Adzkia Jasmine"},{"presensi":7,"nama":"Azka Al Latif"},{"presensi":8,"nama":"Elang Fachriza Wibowo"},{"presensi":9,"nama":"Fadhil Al Maisan Sakha Setiyawan"},{"presensi":10,"nama":"Fajria Shabihah Azzahra"},{"presensi":11,"nama":"Falilah Ransi Kayana"},{"presensi":12,"nama":"Faqih Alfarizi Utama"},{"presensi":13,"nama":"Farah Atania Dumaj"},{"presensi":14,"nama":"Fidelia Carlise Tasanee"},{"presensi":15,"nama":"Hayden Aerozensa Sutrisno"},{"presensi":16,"nama":"Ibni Amiir Al Farraas"},{"presensi":17,"nama":"Muhammad Ahsan Haidar"},{"presensi":18,"nama":"Muhammad Lutfie Sakhi Zaidan"},{"presensi":19,"nama":"Mutiara Putri Santoso"},{"presensi":20,"nama":"Nadzira Qurbah Shalihah"},{"presensi":21,"nama":"Qudsia Khaira Arzami"},{"presensi":22,"nama":"Raihana Salsabila Nadhifa"},{"presensi":23,"nama":"Shakila Athaleta Defrina"},{"presensi":24,"nama":"Shelcye Alya Bilbina"},{"presensi":25,"nama":"Tsania Elrahma Setyawan"},{"presensi":26,"nama":"Wira Adhyasta Wardhana"},{"presensi":27,"nama":"Yaqdhan Rafa Atalla"},{"presensi":28,"nama":"Yusuf Zian Arkana"}],
+            "6C": [{"presensi":1,"nama":"Adelia Shazia Azzahra"},{"presensi":2,"nama":"Aidan Syam Rachmad"},{"presensi":3,"nama":"Akbar Nurta Alim"},{"presensi":4,"nama":"Athalla Zafran Al Rafisqi"},{"presensi":5,"nama":"Auliya Putri Rhamadani"},{"presensi":6,"nama":"Daanya Ulima Saputro"},{"presensi":7,"nama":"Diandra Nasya Azzahra"},{"presensi":8,"nama":"Dzakira Fauzia Aftani"},{"presensi":9,"nama":"Fatih Rahman"},{"presensi":10,"nama":"Gilang Ramadhan"},{"presensi":11,"nama":"Hafida Husna Akmalia"},{"presensi":12,"nama":"Kalena Shafiyya Nailatul Izzah"},{"presensi":13,"nama":"Kania Khanza Farzana Callysta"},{"presensi":14,"nama":"Kayra Dzikri Kasyifa Aghna"},{"presensi":15,"nama":"Kayyisa Zaida Windriya"},{"presensi":16,"nama":"Ken Cordoba Hayam Wuruk Dhofir"},{"presensi":17,"nama":"Keysha Calista Ramadhani"},{"presensi":18,"nama":"Muhammad Afandi"},{"presensi":19,"nama":"Muhammad Firman Abdillah"},{"presensi":20,"nama":"Muhammad Keenan Wicaksono"},{"presensi":21,"nama":"Nuria Azzahra Hartanto"},{"presensi":22,"nama":"Oryza Sativa Khairunnisa'"},{"presensi":23,"nama":"Qatrunada Shadrina Auni"},{"presensi":24,"nama":"Sabiq Maulana Fakhrudin"},{"presensi":25,"nama":"Sulthan Hanif Muhamad Taufik"},{"presensi":26,"nama":"Tiara Khairun Nisa"},{"presensi":27,"nama":"Urzuqnie Fahman"},{"presensi":28,"nama":"Zhafran Axel Alfarizi"}],
+            "6D": [{"presensi":1,"nama":"Adinda Aurelia"},{"presensi":2,"nama":"Afifah Bilqis Azzahra"},{"presensi":3,"nama":"Akma Safaraz Ajunta"},{"presensi":4,"nama":"Alaina Arufa Nisa'"},{"presensi":5,"nama":"Alisha Shafia Sugianto"},{"presensi":6,"nama":"Anarta Rizki Pratama"},{"presensi":7,"nama":"Annorafatech Aqilahamdah"},{"presensi":8,"nama":"Aprilio Wifa Albyansyah"},{"presensi":9,"nama":"Ceisya Hazkia Rizky Subagyo"},{"presensi":10,"nama":"Devandra Alvaro El Zahran"},{"presensi":11,"nama":"Dzakiyya Talita Sakhi Wicaksono"},{"presensi":12,"nama":"Dzaky Almair Jamil Wibowo"},{"presensi":13,"nama":"Fathiya Halwa Nisa"},{"presensi":14,"nama":"Faza Hanifa Nugroho"},{"presensi":15,"nama":"Hafuza Gentza Gunarso"},{"presensi":16,"nama":"Helios Cakrabirawa Samsudin"},{"presensi":17,"nama":"Justitia Kafila"},{"presensi":18,"nama":"Kaureen Fazeela Syakira"},{"presensi":19,"nama":"Khafi Aqlan Raiz"},{"presensi":20,"nama":"Kinasih Helga Hares"},{"presensi":21,"nama":"Lionel Castila"},{"presensi":22,"nama":"Mosanda Maarif"},{"presensi":23,"nama":"Muhammad Yahya Asy'ari"},{"presensi":24,"nama":"Nadifa Nur Medina"},{"presensi":25,"nama":"Nailah Hafiza Izzatunnisa"},{"presensi":26,"nama":"Novandra Arjuna Pratama"},{"presensi":27,"nama":"Radinwangi Avatara Azura Kertabhauma Cakraningrat"},{"presensi":28,"nama":"Umar Al-Faruq"}]
+        };
+
+        let databaseSiswa = {}; let dataNilaiSiswa = {}; 
+        let activeKelas = null; let activeMode = 'jumlah'; let fokusInput = 'total'; let nilaiInput = { r1: '', r2: '', r3: '', total: '' };
+        let activeSiswaId = ""; let popupTimeout; let selectedEditClassKey = null; let modeManageSiswa = 'tambah';
+
+        function simpanAturanKeLocal() { localStorage.setItem('kates_config_kelas', JSON.stringify(configKelas)); }
+        function muatAturanDariLocal() {
+            const saved = localStorage.getItem('kates_config_kelas');
+            if(saved) {
+                const parsed = JSON.parse(saved);
+                if(parsed['kls1']) { configKelas = parsed; } else { simpanAturanKeLocal(); }
+                Object.keys(configKelas).forEach(key => {
+                    const labelName = document.getElementById('label-name-' + key); const labelSub = document.getElementById('label-sub-' + key);
+                    if (labelName) labelName.innerText = configKelas[key].name;
+                    let valP = configKelas[key].valPembagi;
+                    if (labelSub) labelSub.innerText = '/' + valP;
+                });
+            }
+        }
+
+        function simpanSiswaKeLocal() { localStorage.setItem('kates_database_siswa', JSON.stringify(databaseSiswa)); }
+        function muatSiswaDariLocal() { 
+            const saved = localStorage.getItem('kates_database_siswa'); 
+            if(saved) {
+                databaseSiswa = JSON.parse(saved);
+                if(databaseSiswa["1A"] && databaseSiswa["1A"].length < 5) {
+                    databaseSiswa = JSON.parse(JSON.stringify(defaultSiswa));
+                    simpanSiswaKeLocal();
+                }
+            } else { 
+                databaseSiswa = JSON.parse(JSON.stringify(defaultSiswa)); 
+                simpanSiswaKeLocal(); 
+            } 
+        }
+        
+        function simpanNilaiKeLocal() { localStorage.setItem('kates_data_nilai_siswa', JSON.stringify(dataNilaiSiswa)); }
+        function muatNilaiDariLocal() { const saved = localStorage.getItem('kates_data_nilai_siswa'); if(saved) dataNilaiSiswa = JSON.parse(saved); }
+        function simpanDataOffline() { localStorage.setItem('kates_offline_state', JSON.stringify({ activeKelas, activeMode, fokusInput, nilaiInput, activeSiswaId })); }
+        function muatDataOffline() { 
+            try { 
+                const state = JSON.parse(localStorage.getItem('kates_offline_state')); 
+                if (state && state.activeKelas) { 
+                    nilaiInput = state.nilaiInput || { r1: '', r2: '', r3: '', total: '' }; 
+                    setMode(state.activeMode || 'jumlah'); 
+                    
+                    let aKelas = state.activeKelas;
+                    if(aKelas === '55') aKelas = 'kls1'; else if(aKelas === '60') aKelas = 'kls2'; else if(aKelas === '65') aKelas = 'kls4'; else if(aKelas === '45') aKelas = 'lain';
+                    
+                    pilihKelasAktif(aKelas); 
+                    setFokus(state.fokusInput || 'total'); 
+                    if(state.activeSiswaId) { 
+                        setTimeout(() => { 
+                            document.getElementById('select-siswa').value = state.activeSiswaId; 
+                            activeSiswaId = state.activeSiswaId; 
+                            muatNilaiSiswaAktif(); 
+                        }, 50); 
+                    } 
+                    return true; 
+                } 
+            } catch (e) {} return false; 
+        }
+
+        function initLongPressEvents() {
+            ['kls1', 'kls2', 'kls3', 'kls4', 'kls5', 'kls6', 'lain'].forEach(key => {
+                const btn = document.getElementById('btn-' + key); if (!btn) return; let touchTimer; let isLongPress = false;
+                btn.addEventListener('contextmenu', e => e.preventDefault());
+                const startAction = (e) => { isLongPress = false; touchTimer = setTimeout(() => { isLongPress = true; if (navigator.vibrate) navigator.vibrate(50); bukaEditKelas(key); }, 800); };
+                const endAction = (e) => { clearTimeout(touchTimer); if (!isLongPress) pilihKelasAktif(key); };
+                btn.addEventListener('mousedown', startAction); btn.addEventListener('mouseup', endAction); btn.addEventListener('mouseleave', () => clearTimeout(touchTimer));
+                btn.addEventListener('touchstart', (e) => { startAction(); }, {passive: true}); btn.addEventListener('touchend', endAction); btn.addEventListener('touchmove', () => clearTimeout(touchTimer));
+            });
+        }
+
+        function bukaEditKelas(key) {
+            selectedEditClassKey = key; document.getElementById('edit-kelas-title').innerText = "Edit " + configKelas[key].name; document.getElementById('edit-label-nama').value = configKelas[key].name; document.getElementById('edit-pembagi-val').value = configKelas[key].valPembagi; toggleModal('edit-kelas-modal', true);
+        }
+
+        function simpanEditAturan() {
+            const newName = document.getElementById('edit-label-nama').value.trim(); const newPembagi = document.getElementById('edit-pembagi-val').value.trim();
+            if(!newName || !newPembagi) return; const oldKey = selectedEditClassKey;
+            
+            configKelas[oldKey].name = newName;
+            configKelas[oldKey].valPembagi = parseInt(newPembagi);
+            simpanAturanKeLocal();
+            
+            const labelName = document.getElementById('label-name-' + oldKey); const labelSub = document.getElementById('label-sub-' + oldKey);
+            if (labelName) labelName.innerText = newName; if (labelSub) labelSub.innerText = '/' + newPembagi;
+            toggleModal('edit-kelas-modal', false);
+            if(activeKelas === oldKey) pilihKelasAktif(oldKey);
+        }
+
+        function toggleModal(id, show) { const el = document.getElementById(id); if (!el) return; if(show) { el.classList.remove('pointer-events-none', 'opacity-0'); el.classList.add('opacity-100'); el.querySelector('.relative').classList.remove('scale-95'); el.querySelector('.relative').classList.add('scale-100'); } else { el.classList.add('pointer-events-none', 'opacity-0'); el.classList.remove('opacity-100'); el.querySelector('.relative').classList.remove('scale-100'); el.querySelector('.relative').classList.add('scale-95'); } }
+
+        function updateKelasDropdownOptions() {
+            const selectKelas = document.getElementById('select-kelas-grading'); const selectManageKelas = document.getElementById('manage-kelas'); selectKelas.innerHTML = '<option value="">-- KELAS --</option>'; selectManageKelas.innerHTML = '';
+            Object.keys(databaseSiswa).sort().forEach(key => { const optGrading = document.createElement('option'); optGrading.value = key; optGrading.innerText = key; selectKelas.appendChild(optGrading); const optManage = document.createElement('option'); optManage.value = key; optManage.innerText = key; selectManageKelas.appendChild(optManage); });
+        }
+
+        function pilihKelasDariDropdown() {
+            const selectedClass = document.getElementById('select-kelas-grading').value; if(!selectedClass) return;
+            let targetCategory = 'kls1';
+            if (selectedClass.startsWith('1')) targetCategory = 'kls1';
+            else if (selectedClass.startsWith('2')) targetCategory = 'kls2';
+            else if (selectedClass.startsWith('3')) targetCategory = 'kls3';
+            else if (selectedClass.startsWith('4')) targetCategory = 'kls4';
+            else if (selectedClass.startsWith('5')) targetCategory = 'kls5';
+            else if (selectedClass.startsWith('6')) targetCategory = 'kls6';
+            
+            if (activeKelas === 'lain') targetCategory = 'lain';
+            pilihKelasAktif(targetCategory, selectedClass);
+        }
+
+        function getSiswaList(namaKelas) { if (activeKelas === 'lain' && namaKelas) return databaseSiswa[namaKelas] || []; return databaseSiswa[namaKelas] || []; }
+
+        function updateSiswaDropdown() {
+            const select = document.getElementById('select-siswa'); select.innerHTML = '<option value="">-- SISWA --</option>';
+            const currentClassName = document.getElementById('select-kelas-grading').value; if(!currentClassName) return;
+            const siswaKelas = getSiswaList(currentClassName);
+            siswaKelas.forEach(s => {
+                const storageId = activeKelas === 'lain' ? s.nama + '_koding' : s.nama + '_' + currentClassName;
+                const statusSaved = dataNilaiSiswa[storageId] ? " ✅" : "";
+                const opt = document.createElement('option'); opt.value = s.nama;
+                const properName = s.nama.toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+                opt.innerText = `${s.presensi}. ${properName}${statusSaved}`; select.appendChild(opt);
+            });
+            const belumTernilai = siswaKelas.find(s => !dataNilaiSiswa[activeKelas === 'lain' ? s.nama + '_koding' : s.nama + '_' + currentClassName]);
+            if(belumTernilai) { select.value = belumTernilai.nama; activeSiswaId = belumTernilai.nama; } else if (siswaKelas.length > 0) { select.value = siswaKelas[0].nama; activeSiswaId = siswaKelas[0].nama; } else { activeSiswaId = ""; }
+            muatNilaiSiswaAktif();
+        }
+
+        function pilihSiswaManual() { activeSiswaId = document.getElementById('select-siswa').value; muatNilaiSiswaAktif(); }
+
+        function muatNilaiSiswaAktif() {
+            nilaiInput = { r1: '', r2: '', r3: '', total: '' }; const currentClassName = document.getElementById('select-kelas-grading').value;
+            const storageId = activeKelas === 'lain' ? activeSiswaId + '_koding' : activeSiswaId + '_' + currentClassName;
+            if (activeSiswaId && dataNilaiSiswa[storageId]) { const nilai = dataNilaiSiswa[storageId]; nilaiInput.r1 = nilai.r1 || ''; nilaiInput.r2 = nilai.r2 || ''; nilaiInput.r3 = nilai.r3 || ''; nilaiInput.total = nilai.total || ''; setMode(nilai.mode || 'jumlah'); } else { updateTampilan(); kalkulasi(); } updateTampilan(); kalkulasi();
+        }
+
+        function setModeManage(mode) {
+            modeManageSiswa = mode;
+            document.getElementById('tab-manage-tambah').className = mode === 'tambah' ? "flex-1 py-1.5 text-[9px] sm:text-[10px] font-black rounded-md bg-white shadow-sm text-blue-600 transition-all" : "flex-1 py-1.5 text-[9px] sm:text-[10px] font-black rounded-md text-slate-500 hover:text-slate-700 transition-all";
+            document.getElementById('tab-manage-edit').className = mode === 'edit' ? "flex-1 py-1.5 text-[9px] sm:text-[10px] font-black rounded-md bg-white shadow-sm text-blue-600 transition-all" : "flex-1 py-1.5 text-[9px] sm:text-[10px] font-black rounded-md text-slate-500 hover:text-slate-700 transition-all";
+            document.getElementById('box-manage-select').classList.toggle('hidden', mode === 'tambah');
+            document.getElementById('btn-group-tambah').classList.toggle('hidden', mode === 'edit');
+            document.getElementById('btn-group-edit').classList.toggle('hidden', mode === 'tambah');
+            onChangeManageKelas(); 
+        }
+
+        function tambahSiswaCepat() { const currentClassName = document.getElementById('select-kelas-grading').value; if(!currentClassName) { tampilkanPeringatanLucu('nokelas'); return; } document.getElementById('manage-kelas').value = currentClassName; setModeManage('tambah'); toggleModal('tambah-siswa-modal', true); }
+        function onChangeManageKelas() { const kelas = document.getElementById('manage-kelas').value; if(!kelas) return; if (modeManageSiswa === 'tambah') { document.getElementById('manage-presensi').value = getSiswaList(kelas).length + 1; document.getElementById('manage-nama').value = ""; } else { const selectSiswa = document.getElementById('manage-siswa-select'); selectSiswa.innerHTML = '<option value="">-- Pilih Siswa --</option>'; getSiswaList(kelas).forEach(s => { const opt = document.createElement('option'); opt.value = s.nama; opt.innerText = `${s.presensi}. ${s.nama.toLowerCase().replace(/\b\w/g, l => l.toUpperCase())}`; selectSiswa.appendChild(opt); }); onChangeManageSiswa(); } }
+        function onChangeManageSiswa() { const s = getSiswaList(document.getElementById('manage-kelas').value).find(x => x.nama === document.getElementById('manage-siswa-select').value); if(s) { document.getElementById('manage-presensi').value = s.presensi; document.getElementById('manage-nama').value = s.nama.toLowerCase().replace(/\b\w/g, l => l.toUpperCase()); } else { document.getElementById('manage-presensi').value = ""; document.getElementById('manage-nama').value = ""; } }
+        
+        function simpanSiswaBaru() { const targetClass = document.getElementById('manage-kelas').value; const presensiNum = parseInt(document.getElementById('manage-presensi').value) || 1; const rawNama = document.getElementById('manage-nama').value.trim(); if(!targetClass || !rawNama) return; const nama = rawNama.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '); if(!databaseSiswa[targetClass]) databaseSiswa[targetClass] = []; databaseSiswa[targetClass].push({ presensi: presensiNum, nama: nama }); databaseSiswa[targetClass].sort((a, b) => a.presensi - b.presensi); simpanSiswaKeLocal(); toggleModal('tambah-siswa-modal', false); document.getElementById('select-kelas-grading').value = targetClass; updateSiswaDropdown(); document.getElementById('select-siswa').value = nama; activeSiswaId = nama; muatNilaiSiswaAktif(); }
+        function simpanEditSiswa() { const targetClass = document.getElementById('manage-kelas').value; const oldNamaSiswa = document.getElementById('manage-siswa-select').value; const presensiNum = parseInt(document.getElementById('manage-presensi').value) || 1; const rawNama = document.getElementById('manage-nama').value.trim(); if(!targetClass || !oldNamaSiswa || !rawNama) return; const newNama = rawNama.toLowerCase().split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '); const list = databaseSiswa[targetClass]; const studentIndex = list.findIndex(s => s.nama === oldNamaSiswa); if(studentIndex > -1) { list[studentIndex].presensi = presensiNum; list[studentIndex].nama = newNama; list.sort((a, b) => a.presensi - b.presensi); const oldStorageId = activeKelas === 'lain' ? oldNamaSiswa + '_koding' : oldNamaSiswa + '_' + targetClass; const newStorageId = activeKelas === 'lain' ? newNama + '_koding' : newNama + '_' + targetClass; if (oldStorageId !== newStorageId && dataNilaiSiswa[oldStorageId]) { dataNilaiSiswa[newStorageId] = dataNilaiSiswa[oldStorageId]; delete dataNilaiSiswa[oldStorageId]; simpanNilaiKeLocal(); } simpanSiswaKeLocal(); toggleModal('tambah-siswa-modal', false); updateSiswaDropdown(); if(activeSiswaId === oldNamaSiswa) { document.getElementById('select-siswa').value = newNama; activeSiswaId = newNama; muatNilaiSiswaAktif(); } } }
+        function hapusSiswaManage() { const targetClass = document.getElementById('manage-kelas').value; const namaSiswa = document.getElementById('manage-siswa-select').value; if(!namaSiswa) return; if(confirm(`Yakin hapus "${namaSiswa}"?`)) { const list = databaseSiswa[targetClass]; const index = list.findIndex(s => s.nama === namaSiswa); if(index > -1) { list.splice(index, 1); delete dataNilaiSiswa[namaSiswa + '_koding']; delete dataNilaiSiswa[namaSiswa + '_' + targetClass]; simpanSiswaKeLocal(); simpanNilaiKeLocal(); toggleModal('tambah-siswa-modal', false); updateSiswaDropdown(); } } }
+
+        function simpanNilaiKeSiswa() { if(!activeKelas) return tampilkanPeringatanLucu('nokelas'); if(!activeSiswaId) return alert("Pilih siswa dulu!"); const storageId = activeKelas === 'lain' ? activeSiswaId + '_koding' : activeSiswaId + '_' + document.getElementById('select-kelas-grading').value; dataNilaiSiswa[storageId] = { mode: activeMode, r1: nilaiInput.r1, r2: nilaiInput.r2, r3: nilaiInput.r3, total: nilaiInput.total, asli: document.getElementById('nilaiAsli').innerText, bulat: document.getElementById('nilaiBulat').innerText }; simpanNilaiKeLocal(); if (navigator.vibrate) navigator.vibrate(50); const saveBtn = document.getElementById('btn-simpan-nilai'); saveBtn.innerText = "✅ BERHASIL DISIMPAN!"; saveBtn.classList.replace('from-blue-600', 'from-emerald-500'); saveBtn.classList.replace('to-indigo-600', 'to-emerald-600'); setTimeout(() => { saveBtn.innerHTML = "📥 SIMPAN NILAI SISWA"; saveBtn.classList.replace('from-emerald-500', 'from-blue-600'); saveBtn.classList.replace('to-emerald-600', 'to-indigo-600'); }, 1000); const select = document.getElementById('select-siswa'); if (select.selectedIndex < select.options.length - 1) { select.selectedIndex++; activeSiswaId = select.value; muatNilaiSiswaAktif(); } else { activeSiswaId = ""; select.value = ""; muatNilaiSiswaAktif(); } }
+        function bukaRekapNilai() { const curClass = document.getElementById('select-kelas-grading').value; if(!curClass) return tampilkanPeringatanLucu('nokelas'); document.getElementById('rekap-class-tag').innerText = curClass; const body = document.getElementById('tabel-rekap-body'); body.innerHTML = ""; const list = getSiswaList(curClass); document.getElementById('rekap-total-siswa').innerText = `Total: ${list.length} Siswa`; if(list.length === 0) { body.innerHTML = `<p class="text-center text-xs text-slate-400 font-bold py-10 italic">Kosong...</p>`; return toggleModal('rekap-modal', true); } list.forEach(s => { const n = dataNilaiSiswa[activeKelas === 'lain' ? s.nama + '_koding' : s.nama + '_' + curClass]; const proper = s.nama.toLowerCase().replace(/\b\w/g, l => l.toUpperCase()); const row = document.createElement('div'); row.className = "flex justify-between items-center bg-white p-2.5 rounded-xl border border-slate-100 shadow-sm"; row.innerHTML = `<div class="flex items-center gap-2"><span class="text-[10px] text-slate-400 font-bold">${s.presensi}</span><div><p class="text-xs font-black text-slate-700 leading-tight">${proper}</p><p class="text-[8px] text-slate-400 font-bold">${n ? (n.mode === 'romawi' ? `Rom I:${n.r1||0}, II:${n.r2||0}, III:${n.r3||0}` : `Total:${n.total||0}`) : 'Belum diisi'}</p></div></div><div class="flex items-center gap-3">${n ? `<div class="text-right"><div class="text-xs font-black text-emerald-600">${n.bulat}</div><div class="text-[9px] text-slate-400">Asli: ${n.asli}</div></div>` : `<span class="text-slate-300 font-bold italic text-[10px]">Kosong</span>`}<button onclick="hapusSiswaDariList('${s.nama}', '${curClass}')" class="text-rose-400 hover:text-rose-600 text-sm font-black px-1">&times;</button></div>`; body.appendChild(row); }); toggleModal('rekap-modal', true); }
+        function hapusSiswaDariList(nama, curClass) { if(confirm("Hapus siswa ini?")) { const list = databaseSiswa[curClass]; const i = list.findIndex(s => s.nama === nama); if(i > -1) { list.splice(i, 1); delete dataNilaiSiswa[activeKelas === 'lain' ? nama + '_koding' : nama + '_' + curClass]; simpanSiswaKeLocal(); simpanNilaiKeLocal(); bukaRekapNilai(); updateSiswaDropdown(); } } }
+        function clearSemuaNilai() { const curClass = document.getElementById('select-kelas-grading').value; if(!curClass) return; if(confirm("Kosongkan semua nilai di kelas ini?")) { getSiswaList(curClass).forEach(s => delete dataNilaiSiswa[activeKelas === 'lain' ? s.nama + '_koding' : s.nama + '_' + curClass]); simpanNilaiKeLocal(); bukaRekapNilai(); updateSiswaDropdown(); } }
+        function bukaExportDialog() { toggleModal('export-excel-modal', true); }
+        function prosesUnduhExcel() { const curClass = document.getElementById('select-kelas-grading').value; if(!curClass) return; const mapel = document.getElementById('export-mapel-name').value.trim() || "-"; const list = getSiswaList(curClass); const d = new Date(); const dateStr = `${["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"][d.getDay()]}, ${d.getDate()} ${["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][d.getMonth()]} ${d.getFullYear()} pukul ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')} WIB`; let table = `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><body style="font-family:'Arial';font-size:11pt;"><table border="1" style="border-collapse:collapse;"><tr><td colspan="4" style="font-weight:bold;font-size:14pt;border:none;">DAFTAR NILAI KELAS ${curClass.toUpperCase()}</td></tr><tr><td colspan="4" style="font-weight:bold;font-size:11pt;border:none;">Mata Pelajaran: ${mapel}</td></tr><tr><td colspan="4" style="font-size:11pt;border:none;color:#555;">Di download pada: ${dateStr}</td></tr><tr><td colspan="4" style="border:none;height:15px;"></td></tr><tr style="background-color:#f1f5f9;"><th style="font-weight:bold;text-align:center;width:40px;padding:6px;">NO</th><th style="font-weight:bold;text-align:left;width:450px;padding:6px;">NAMA</th><th style="font-weight:bold;text-align:center;width:100px;padding:6px;">NILAI BULAT</th><th style="font-weight:bold;text-align:center;width:100px;padding:6px;">NILAI ASLI</th></tr>`; list.forEach(s => { const n = dataNilaiSiswa[activeKelas === 'lain' ? s.nama + '_koding' : s.nama + '_' + curClass]; const proper = s.nama.toLowerCase().replace(/\b\w/g, l => l.toUpperCase()); if(n) table += `<tr style="background-color:#d1fae5;"><td style="text-align:center;padding:5px;">${s.presensi}</td><td style="padding:5px;width:450px;">${proper}</td><td style="text-align:center;padding:5px;font-weight:bold;">${n.bulat}</td><td style="text-align:center;padding:5px;">${n.asli}</td></tr>`; else table += `<tr style="background-color:#fce7f3;color:#db2777;"><td style="text-align:center;padding:5px;">${s.presensi}</td><td style="padding:5px;width:450px;">${proper}</td><td style="text-align:center;padding:5px;font-weight:bold;">-</td><td style="text-align:center;padding:5px;">-</td></tr>`; }); table += `</table></body></html>`; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([table], {type: 'application/vnd.ms-excel'})); a.download = mapel !== "-" ? `Nilai Mapel ${mapel}.xls` : `Nilai Mapel.xls`; document.body.appendChild(a); a.click(); document.body.removeChild(a); toggleModal('export-excel-modal', false); }
+
+        function pilihKelasAktif(kelas, forceSubClass = null) {
+            activeKelas = kelas; document.getElementById('area-kelas').classList.remove('needs-class');
+            ['kls1', 'kls2', 'kls3', 'kls4', 'kls5', 'kls6', 'lain'].forEach(k => { const btn = document.getElementById('btn-' + k); if(btn) { btn.className = btn.className.replace(/bg-\w+-500/g, 'bg-white'); btn.classList.remove('class-active'); } });
+            const activeBtn = document.getElementById('btn-' + kelas); if(activeBtn) { activeBtn.classList.remove('bg-white'); activeBtn.classList.add(configKelas[kelas].color, 'class-active'); }
+            const selectKelas = document.getElementById('select-kelas-grading'); selectKelas.innerHTML = '';
+            let filteredClasses = [];
+            if (kelas === 'kls1') filteredClasses = ["1 ICP A", "1 ICP B", "1A", "1B", "1C", "1D"];
+            else if (kelas === 'kls2') filteredClasses = ["2 ICP A", "2A", "2B", "2C", "2D"];
+            else if (kelas === 'kls3') filteredClasses = ["3A", "3B", "3C", "3D"];
+            else if (kelas === 'kls4') filteredClasses = ["4A", "4B", "4C", "4D"];
+            else if (kelas === 'kls5') filteredClasses = ["5A", "5B", "5C", "5D"];
+            else if (kelas === 'kls6') filteredClasses = ["6A", "6B", "6C", "6D"];
+            else if (kelas === 'lain') filteredClasses = Object.keys(databaseSiswa).sort();
+
+            filteredClasses.forEach(cName => { const opt = document.createElement('option'); opt.value = cName; opt.innerText = cName; selectKelas.appendChild(opt); });
+            if (forceSubClass && filteredClasses.includes(forceSubClass)) selectKelas.value = forceSubClass; else if (filteredClasses.length > 0) selectKelas.value = filteredClasses[0];
+
+            if (kelas === 'lain') { document.getElementById('view-romawi').classList.replace('grid-cols-3', 'grid-cols-2'); document.getElementById('box-r3').classList.add('hidden'); document.getElementById('label-r2').innerText = 'ROM II (x1)'; if (fokusInput === 'r3') setFokus('r2'); } else { document.getElementById('view-romawi').classList.replace('grid-cols-2', 'grid-cols-3'); document.getElementById('box-r3').classList.remove('hidden'); document.getElementById('label-r2').innerText = 'ROM II (x2)'; }
+            document.getElementById('max-r1').innerText = 'Maks: ' + configKelas[kelas].maxR1; document.getElementById('max-r2').innerText = 'Maks: ' + configKelas[kelas].maxR2; if (kelas !== 'lain') document.getElementById('max-r3').innerText = 'Maks: ' + configKelas[kelas].maxR3;
+            
+            document.getElementById('max-total').innerText = 'Maks: ' + configKelas[kelas].valPembagi;
+            document.getElementById('label-name-lain').className = kelas === 'lain' ? "text-[8px] font-black tracking-tight text-amber-300" : "text-[8px] font-black tracking-tight text-cyan-600";
+            updateSiswaDropdown(); validasiNilai(); updateTampilan(); kalkulasi(); simpanDataOffline();
+        }
+
+        function setMode(mode) { activeMode = mode; document.getElementById('tab-romawi').className = mode === 'romawi' ? "flex-1 py-1 rounded-full text-[10px] font-bold transition-all bg-indigo-500 text-white shadow-md" : "flex-1 py-1 rounded-full text-[10px] font-bold transition-all text-slate-500 bg-transparent"; document.getElementById('tab-jumlah').className = mode === 'jumlah' ? "flex-1 py-1 rounded-full text-[10px] font-bold transition-all bg-amber-400 text-slate-800 shadow-md" : "flex-1 py-1 rounded-full text-[10px] font-bold transition-all text-slate-500 bg-transparent"; if(mode === 'romawi'){ document.getElementById('view-romawi').classList.replace('hidden','grid'); document.getElementById('view-jumlah').classList.replace('flex','hidden'); setFokus('r1'); }else{ document.getElementById('view-jumlah').classList.replace('hidden','flex'); document.getElementById('view-romawi').classList.replace('grid','hidden'); setFokus('total'); } kalkulasi(); simpanDataOffline(); }
+        function setFokus(idBox) { fokusInput = idBox; ['r1', 'r2', 'r3', 'total'].forEach(id => { const el = document.getElementById('box-' + id); if(el) el.classList.remove('input-active'); }); const target = document.getElementById('box-' + idBox); if(target) target.classList.add('input-active'); }
+        function tekanTombol(kunci) { if (!activeKelas) { document.getElementById('area-kelas').classList.add('needs-class'); return tampilkanPeringatanLucu('nokelas'); } let strCurrent = nilaiInput[fokusInput]; if (kunci === 'C') strCurrent = ''; else if (kunci === 'DEL') strCurrent = strCurrent.slice(0, -1); else { if(strCurrent === '0' && kunci === '0') return; strCurrent += kunci; } nilaiInput[fokusInput] = strCurrent; validasiNilai(); updateTampilan(); kalkulasi(); simpanDataOffline(); }
+        function validasiNilai() { 
+            if(!activeKelas) return; const valNum = parseInt(nilaiInput[fokusInput]); if(isNaN(valNum)) return; 
+            let maxAllow = 0; if(fokusInput === 'r1') maxAllow = configKelas[activeKelas].maxR1; if(fokusInput === 'r2') maxAllow = configKelas[activeKelas].maxR2; if(fokusInput === 'r3') maxAllow = configKelas[activeKelas].maxR3; 
+            if(fokusInput === 'total') maxAllow = configKelas[activeKelas].valPembagi; 
+            if(valNum > maxAllow) { nilaiInput[fokusInput] = ''; tampilkanPeringatanLucu('over', maxAllow); } 
+        }
+        function updateTampilan() { document.getElementById('disp-r1').innerText = nilaiInput.r1; document.getElementById('disp-r2').innerText = nilaiInput.r2; document.getElementById('disp-r3').innerText = nilaiInput.r3; document.getElementById('disp-total').innerText = nilaiInput.total; }
+        
+        function kalkulasi() {
+            if (!activeKelas) return;
+            let pembagi = configKelas[activeKelas].valPembagi;
+            let totalSkor = 0;
+            if (activeMode === 'romawi') { let r1 = parseInt(nilaiInput.r1) || 0; let r2 = parseInt(nilaiInput.r2) || 0; let r3 = parseInt(nilaiInput.r3) || 0; if (activeKelas === 'lain') totalSkor = (r1 * 1) + (r2 * 1); else totalSkor = (r1 * 1) + (r2 * 2) + (r3 * 3); } else { totalSkor = parseFloat(nilaiInput.total) || 0; }
+            let nilaiAkhir = (totalSkor * 100) / pembagi; let valAsli = isNaN(nilaiAkhir) ? 0 : nilaiAkhir; let strAsli = valAsli.toFixed(2); if(strAsli.endsWith('.00')) strAsli = valAsli.toString(); let valBulat = Math.round(valAsli); let strBulat = valBulat.toString();
+            const elAsli = document.getElementById('nilaiAsli'); const elBulat = document.getElementById('nilaiBulat');
+            if(elAsli.innerText !== strAsli) { elAsli.innerText = strAsli; elBulat.innerText = strBulat; elAsli.classList.remove('pop-effect'); elBulat.classList.remove('pop-effect'); void elAsli.offsetWidth; elAsli.classList.add('pop-effect'); elBulat.classList.add('pop-effect'); }
+            const gifEl = document.getElementById('gif-reaction'); if (totalSkor === 0 || !activeKelas) { gifEl.innerHTML = ''; gifEl.classList.replace('scale-100','scale-0'); } else { gifEl.classList.replace('scale-0','scale-100'); if (valBulat < 70) gifEl.innerHTML = '<img src="sedih.gif" alt="sedih" class="w-full h-full object-contain">'; else if (valBulat >= 70 && valBulat <= 85) gifEl.innerHTML = '<img src="senyum.gif" alt="senyum" class="w-full h-full object-contain">'; else gifEl.innerHTML = '<img src="bahagia.gif" alt="bahagia" class="w-full h-full object-contain">'; }
+        }
+
+        function initMathBg() { const bg = document.getElementById('mathBg'); const symbols = ['🕌', '☀️', '🦅', '📚', '🔬', '📐', '⚽', '🎨', '💻', '🎭', 'ا', '🕋']; for(let i = 0; i < 10; i++) { let el = document.createElement('div'); el.className = 'symbol'; el.innerText = symbols[Math.floor(Math.random() * symbols.length)]; el.style.left = `${Math.random() * 100}vw`; el.style.animationDuration = `${12 + Math.random() * 10}s`; el.style.animationDelay = `-${Math.random() * 15}s`; el.style.fontSize = `${2 + Math.random() * 2}rem`; bg.appendChild(el); } }
+        
+        window.addEventListener('load', () => {
+            initMathBg(); loadYTLocal(); muatAturanDariLocal(); muatSiswaDariLocal(); muatNilaiDariLocal(); initLongPressEvents(); updateKelasDropdownOptions();
+            activeKelas = null; document.getElementById('area-kelas').classList.remove('needs-class');
+            nilaiInput = { r1: '', r2: '', r3: '', total: '' }; updateTampilan(); kalkulasi(); muatDataOffline();
+
+            // Panggil popup VIP otomatis dengan delay cantik
+            setTimeout(cekStatusVIP, 800);
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+            const key = e.key; if (/^[0-9]$/.test(key)) tekanTombol(key); else if (key === 'Backspace') tekanTombol('DEL'); else if (key.toLowerCase() === 'c' || key === 'Delete' || key === 'Escape') tekanTombol('C'); else if (key === 'Enter') simpanNilaiKeSiswa();
+        });
+    </script>
+</body>
+</html>
